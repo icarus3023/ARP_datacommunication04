@@ -42,12 +42,7 @@ BOOL CArpLayer::Receive(unsigned char* ppayload)
 				InsertTable(pFrame->arp_src_ipaddr, pFrame->arp_src_macaddr, true);
 
 				pFrame = (PARP_HEADER)makeReplyPacket( (unsigned char*) pFrame, (ETHERNET_ADDR*)&proxyTable.GetAt(i).cache_enetaddr.e_addr, (IP_ADDR*)&proxyTable.GetAt(i).cache_ipaddr.i_addr);
-
-				pFrame->op = 0x0200;//타입재설정
-				mp_UnderLayer->setType(ENET_TYPE_ARP);//Ethernet계층 타입설정
-				mp_UnderLayer->SetDestinAddress(pFrame->arp_dst_macaddr.e_addr);
-				mp_UnderLayer->Send((unsigned char*)pFrame, ARP_MAX_LENGTH);
-				
+				SendUnderLayerReply(pFrame);
 				return bSuccess;
 			}
 		}
@@ -60,15 +55,10 @@ BOOL CArpLayer::Receive(unsigned char* ppayload)
 /*확인할 것*/
 			pFrame = (PARP_HEADER)makeReplyPacket( (unsigned char*) pFrame, (ETHERNET_ADDR*)&m_sHeader.arp_src_macaddr.e_addr, (IP_ADDR*)&m_sHeader.arp_src_ipaddr.i_addr);
 
-			mp_UnderLayer->SetDestinAddress(pFrame->arp_dst_macaddr.e_addr);
-			
 			// 응답모드로 요청자에게 패킷 다시날림
 			InsertTable(pFrame->arp_dst_ipaddr, pFrame->arp_dst_macaddr, true);
 			if (isReceivePacketMine(pFrame)) {
-				pFrame->op = 0x0200;//타입재설정
-
-				mp_UnderLayer->setType(ENET_TYPE_ARP);//Ethernet계층 타입설정
-				mp_UnderLayer->Send((unsigned char*)pFrame, ARP_MAX_LENGTH);
+				SendUnderLayerReply(pFrame);
 			}
 		}
 
@@ -92,12 +82,7 @@ BOOL CArpLayer::Receive(unsigned char* ppayload)
 		if (ntohs(pFrame->op) == 0x0001) {
 			if(memcmp(&pFrame->arp_src_macaddr, &m_sHeader.arp_src_macaddr, 6) != 0){ // garp request is not mine
 				pFrame = (PARP_HEADER)makeReplyPacket( (unsigned char*) pFrame, (ETHERNET_ADDR*)&m_sHeader.arp_src_macaddr.e_addr, (IP_ADDR*)&m_sHeader.arp_src_ipaddr.i_addr);
-				pFrame->op = 0x0200;		//타입재설정
-
-				mp_UnderLayer->setType(ENET_TYPE_ARP);//Ethernet계층 타입설정
-				mp_UnderLayer->SetDestinAddress(pFrame->arp_dst_macaddr.e_addr);
-
-				mp_UnderLayer->Send((unsigned char*)pFrame, ARP_MAX_LENGTH);
+				SendUnderLayerReply(pFrame);
 			}
 		}
 
@@ -108,6 +93,15 @@ BOOL CArpLayer::Receive(unsigned char* ppayload)
 		}
 	}
 	return bSuccess;
+}
+
+void CArpLayer::SendUnderLayerReply(PARP_HEADER pFrame)
+{
+	
+	pFrame->op = 0x0200;//타입재설정
+	mp_UnderLayer->SetDestinAddress(pFrame->arp_dst_macaddr.e_addr);
+	mp_UnderLayer->setType(ENET_TYPE_ARP);//Ethernet계층 타입설정
+	mp_UnderLayer->Send((unsigned char*)pFrame, ARP_MAX_LENGTH);
 }
 
 bool CArpLayer::isPacketGARP(const PARP_HEADER  pFrame)
