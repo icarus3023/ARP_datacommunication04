@@ -39,8 +39,7 @@ BOOL CArpLayer::Receive(unsigned char* ppayload)
 	{
 		for (int i = 0; i < proxyTable.GetSize(); i++) {
 			if (isProxyTableEntryAndPacketRequest(pFrame, i)) { // proxy ARP : 프록시 테이블 검사 (ip주소 있는지 & request이면)
-					InsertTable(pFrame->arp_src_ipaddr, pFrame->arp_src_macaddr, true);
-
+				if (isSameTable(pFrame->arp_dst_ipaddr.S_un.s_ip_addr))	InsertTable(pFrame->arp_src_ipaddr, pFrame->arp_src_macaddr, true);
 				pFrame = (PARP_HEADER)makeReplyPacket( (unsigned char*) pFrame, (ETHERNET_ADDR*)&proxyTable.GetAt(i).cache_enetaddr.e_addr, (IP_ADDR*)&proxyTable.GetAt(i).cache_ipaddr.i_addr);
 				SendUnderLayerReply(pFrame);
 				return bSuccess;
@@ -207,7 +206,7 @@ BOOL CArpLayer::isSameTable(unsigned char * pAddress)
 {
 	for (int i = 0; i < table.GetSize(); i++)
 	{
-		if (memcmp(&table[i].cache_ipaddr.i_addr,pAddress, 4) == 0)
+		if (memcmp(&table[i].cache_ipaddr.i_addr,pAddress, 4) == 0 && table[i].cache_type==1)
 		{
 			return false;
 		}
