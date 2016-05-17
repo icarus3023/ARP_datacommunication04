@@ -77,7 +77,7 @@ protected:
 public:
 	BOOL			Receive( unsigned char* ppayload );
 	inline void		SendData( );
-
+	void			SetIpAddress(IP_ADDR * ip_cache, unsigned char * ip);
 private:
 	CLayerManager	m_LayerMgr;
 
@@ -158,6 +158,8 @@ public:
 	CArpLayer* GetArpLayer();
 	afx_msg void OnClickedProxytabledelete();
 	afx_msg void OnBnClickedGratitudearpsend();
+	
+	void SetDstEthernetAddress();
 //	CEdit CGratitudeDeviceAddress;
 	CString CGratitousDevAddr;
 	CEdit CGratitousContol;

@@ -275,19 +275,9 @@ void CArpAppDlg::SendData()
 	m_IP->SetDstIPAddress(dst_ip);
 	m_ARP->SetDestinAddress(dst_ip);
 
-	desaddress[0] = 0xff, desaddress[1] = 0xff, desaddress[2] = 0xff, desaddress[3] = 0xff,
-		desaddress[5] = 0xff, desaddress[4] = 0xff;
-	dst_ip_cache.S_un.s_un_byte.i0 = dst_ip[0];
-	dst_ip_cache.S_un.s_un_byte.i1 = dst_ip[1];
-	dst_ip_cache.S_un.s_un_byte.i2 = dst_ip[2];
-	dst_ip_cache.S_un.s_un_byte.i3 = dst_ip[3];
-
-	dst_ethernet.S_un.s_un_byte.e0 = 0xff;
-	dst_ethernet.S_un.s_un_byte.e1 = 0xff;
-	dst_ethernet.S_un.s_un_byte.e2 = 0xff;
-	dst_ethernet.S_un.s_un_byte.e3 = 0xff;
-	dst_ethernet.S_un.s_un_byte.e4 = 0xff;
-	dst_ethernet.S_un.s_un_byte.e5 = 0xff;
+	
+	SetIpAddress(&dst_ip_cache, dst_ip);
+	SetDstEthernetAddress();
 
 	m_ETH->SetEnetDstAddress(desaddress);
 
@@ -300,6 +290,7 @@ void CArpAppDlg::SendData()
 
 	mp_UnderLayer->Send(NULL, 0);
 }
+
 
 BOOL CArpAppDlg::Receive(unsigned char *ppayload)
 {
@@ -483,20 +474,8 @@ void CArpAppDlg::OnBnClickedGratitudearpsend()
 		src_ip[3 - i] = resolveAddr >> (i * 8);
 	}
 
-	desaddress[0] = 0xff, desaddress[1] = 0xff, desaddress[2] = 0xff, desaddress[3] = 0xff,
-		desaddress[5] = 0xff, desaddress[4] = 0xff;
-
-	dst_ethernet.S_un.s_un_byte.e0 = 0xff;
-	dst_ethernet.S_un.s_un_byte.e1 = 0xff;
-	dst_ethernet.S_un.s_un_byte.e2 = 0xff;
-	dst_ethernet.S_un.s_un_byte.e3 = 0xff;
-	dst_ethernet.S_un.s_un_byte.e4 = 0xff;
-	dst_ethernet.S_un.s_un_byte.e5 = 0xff;
-
-	src_ip_cache.S_un.s_un_byte.i0 = src_ip[0];
-	src_ip_cache.S_un.s_un_byte.i1 = src_ip[1];
-	src_ip_cache.S_un.s_un_byte.i2 = src_ip[2];
-	src_ip_cache.S_un.s_un_byte.i3 = src_ip[3];
+	SetDstEthernetAddress();
+	SetIpAddress(&src_ip_cache,src_ip);
 
 	m_ETH->SetEnetDstAddress(desaddress);
 
@@ -512,4 +491,25 @@ void CArpAppDlg::OnBnClickedGratitudearpsend()
 	m_ARP->setSrcHd(graOidData);
 	m_ETH->SetEnetSrcAddress(graOidData);
 	mp_UnderLayer->Send(NULL, 0);
+}
+
+
+void CArpAppDlg::SetIpAddress(IP_ADDR* ip_cache, unsigned char* ip)
+{
+	ip_cache->S_un.s_un_byte.i0 = ip[0];
+	ip_cache->S_un.s_un_byte.i1 = ip[1];
+	ip_cache->S_un.s_un_byte.i2 = ip[2];
+	ip_cache->S_un.s_un_byte.i3 = ip[3];
+}
+void CArpAppDlg::SetDstEthernetAddress()
+{
+	desaddress[0] = 0xff, desaddress[1] = 0xff, desaddress[2] = 0xff, desaddress[3] = 0xff,
+		desaddress[5] = 0xff, desaddress[4] = 0xff;
+	dst_ethernet.S_un.s_un_byte.e0 = 0xff;
+	dst_ethernet.S_un.s_un_byte.e1 = 0xff;
+	dst_ethernet.S_un.s_un_byte.e2 = 0xff;
+	dst_ethernet.S_un.s_un_byte.e3 = 0xff;
+	dst_ethernet.S_un.s_un_byte.e4 = 0xff;
+	dst_ethernet.S_un.s_un_byte.e5 = 0xff;
+
 }
