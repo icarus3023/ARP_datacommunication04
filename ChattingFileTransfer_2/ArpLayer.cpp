@@ -41,7 +41,7 @@ BOOL CArpLayer::Receive(unsigned char* ppayload)
 			if (isProxyTableEntryAndPacketRequest(pFrame, i)) { // proxy ARP : 프록시 테이블 검사 (ip주소 있는지 & request이면)
 				if (isSameTable(pFrame->arp_dst_ipaddr.S_un.s_ip_addr))	InsertTable(pFrame->arp_src_ipaddr, pFrame->arp_src_macaddr, true);
 				pFrame = (PARP_HEADER)makeReplyPacket( (unsigned char*) pFrame, (ETHERNET_ADDR*)&proxyTable.GetAt(i).cache_enetaddr.e_addr, (IP_ADDR*)&proxyTable.GetAt(i).cache_ipaddr.i_addr);
-				SendUnderLayerReply(pFrame);
+				SendUnderLayerOp(pFrame,0x0200, ARP_MAX_LENGTH);
 				return bSuccess;
 			}
 		}
@@ -58,7 +58,7 @@ BOOL CArpLayer::Receive(unsigned char* ppayload)
 			if(isSameTable(pFrame->arp_dst_ipaddr.S_un.s_ip_addr)) InsertTable(pFrame->arp_dst_ipaddr, pFrame->arp_dst_macaddr, true);
 			
 			if (isReceivePacketMine(pFrame)) {
-				SendUnderLayerReply(pFrame);
+				SendUnderLayerOp(pFrame,0x0200, ARP_MAX_LENGTH);
 			}
 		}
 
@@ -82,7 +82,7 @@ BOOL CArpLayer::Receive(unsigned char* ppayload)
 		if (ntohs(pFrame->op) == 0x0001) {
 			if(memcmp(&pFrame->arp_src_macaddr, &m_sHeader.arp_src_macaddr, 6) != 0){ // garp request is not mine
 				pFrame = (PARP_HEADER)makeReplyPacket( (unsigned char*) pFrame, (ETHERNET_ADDR*)&m_sHeader.arp_src_macaddr.e_addr, (IP_ADDR*)&m_sHeader.arp_src_ipaddr.i_addr);
-				SendUnderLayerReply(pFrame);
+				SendUnderLayerOp(pFrame,0x0200, ARP_MAX_LENGTH);
 			}
 		}
 
@@ -95,13 +95,13 @@ BOOL CArpLayer::Receive(unsigned char* ppayload)
 	return bSuccess;
 }
 
-void CArpLayer::SendUnderLayerReply(PARP_HEADER pFrame)
+void CArpLayer::SendUnderLayerOp(PARP_HEADER pFrame, unsigned short op,int nlength)
 {
 	
-	pFrame->op = 0x0200;//타입재설정
+	pFrame->op = op;//타입재설정
 	mp_UnderLayer->SetDestinAddress(pFrame->arp_dst_macaddr.e_addr);
 	mp_UnderLayer->setType(ENET_TYPE_ARP);//Ethernet계층 타입설정
-	mp_UnderLayer->Send((unsigned char*)pFrame, ARP_MAX_LENGTH);
+	mp_UnderLayer->Send((unsigned char*)pFrame, nlength);
 }
 
 bool CArpLayer::isPacketGARP(const PARP_HEADER  pFrame)
@@ -148,12 +148,7 @@ BOOL CArpLayer::Send(unsigned char* ppayload, int nlength)
 		}
 	}
 	memset(m_sHeader.arp_dst_macaddr.e_addr, 0xff, 6);		//목적지 Device Address를 Brodcast(0xff)로 설정함
-	m_sHeader.op = 0x0100;									//ARP request
-
-	mp_UnderLayer->setType(ENET_TYPE_ARP);
-	mp_UnderLayer->SetDestinAddress(m_sHeader.arp_dst_macaddr.e_addr);
-
-	mp_UnderLayer->Send((unsigned char*)&m_sHeader, nlength + ARP_MAX_LENGTH);
+	SendUnderLayerOp(m_sHeader, 0x0100, nlength + ARP_MAX_LENGTH);
 
 	return false;
 }
