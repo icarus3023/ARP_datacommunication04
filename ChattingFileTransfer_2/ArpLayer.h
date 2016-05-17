@@ -32,6 +32,8 @@ public:
 	BOOL	Send(unsigned char* ppayload, int nlength = 0);		//ARP Request,Reply
 	BOOL	Receive(unsigned char* ppayload);	//ARP Packet이 도착하여 Table을 확인.	
 
+	
+
 	void	ARP_Request_SendPacket(unsigned char* pAddress); //송신지 ip주소를 보냄.
 	void	ARP_Reply_SendPacket(unsigned char *pAddress); //목적지 ip주소를 보냄.
 
@@ -92,6 +94,11 @@ public:
 
 	BOOL isSameTable(unsigned char* pAddress);
 	//protected로 바꾸어 주었습니다.
+	bool isPacketGARP(const PARP_HEADER pFrame);
+	bool isReplyPacketARPorGARP(const PARP_HEADER pFrame);
+	bool isProxyTableEntryAndPacketRequest(const PARP_HEADER pFrame, int i);
+	bool isProxyTableNotEmptyAndNotGarp(const PARP_HEADER pFrame);
+	bool isReceivePacketMine(const PARP_HEADER pFrame);
 protected:
 	ARP_HEADER m_sHeader;
 };

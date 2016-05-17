@@ -35,12 +35,10 @@ BOOL CArpLayer::Receive(unsigned char* ppayload)
 	BOOL bSuccess = FALSE;
 
 	// 프록시테이블
-	if (!proxyTable.IsEmpty()
-		&& memcmp(&pFrame->arp_src_ipaddr,&pFrame->arp_dst_ipaddr, 4) != 0)
+	if (isProxyTableNotEmptyAndNotGarp(pFrame))
 	{
 		for (int i = 0; i < proxyTable.GetSize(); i++) {
-			if (memcmp(pFrame->arp_dst_ipaddr.i_addr, proxyTable.GetAt(i).cache_ipaddr.i_addr, 4) == 0
-				&& (ntohs(pFrame->op) == 0x0001 )) { // proxy ARP : 프록시 테이블 검사 (ip주소 있는지 & request이면)
+			if (isProxyTableEntryAndPacketRequest(pFrame, i)) { // proxy ARP : 프록시 테이블 검사 (ip주소 있는지 & request이면)
 				InsertTable(pFrame->arp_src_ipaddr, pFrame->arp_src_macaddr, true);
 
 				pFrame = (PARP_HEADER)makeReplyPacket( (unsigned char*) pFrame, (ETHERNET_ADDR*)&proxyTable.GetAt(i).cache_enetaddr.e_addr, (IP_ADDR*)&proxyTable.GetAt(i).cache_ipaddr.i_addr);
@@ -62,21 +60,20 @@ BOOL CArpLayer::Receive(unsigned char* ppayload)
 /*확인할 것*/
 			pFrame = (PARP_HEADER)makeReplyPacket( (unsigned char*) pFrame, (ETHERNET_ADDR*)&m_sHeader.arp_src_macaddr.e_addr, (IP_ADDR*)&m_sHeader.arp_src_ipaddr.i_addr);
 
-			pFrame->op = 0x0200;//타입재설정
-
-			mp_UnderLayer->setType(ENET_TYPE_ARP);//Ethernet계층 타입설정
 			mp_UnderLayer->SetDestinAddress(pFrame->arp_dst_macaddr.e_addr);
 			
 			// 응답모드로 요청자에게 패킷 다시날림
 			InsertTable(pFrame->arp_dst_ipaddr, pFrame->arp_dst_macaddr, true);
-			if (memcmp(&pFrame->arp_dst_ipaddr, &m_sHeader.arp_src_ipaddr, 4) == 0) {
+			if (isReceivePacketMine(pFrame)) {
+				pFrame->op = 0x0200;//타입재설정
+
+				mp_UnderLayer->setType(ENET_TYPE_ARP);//Ethernet계층 타입설정
 				mp_UnderLayer->Send((unsigned char*)pFrame, ARP_MAX_LENGTH);
 			}
 		}
 
 		else if (ntohs(pFrame->op) == 0x0002 ) { // reply												
-			if (!memcmp(&pFrame->arp_dst_ipaddr, &m_sHeader.arp_src_ipaddr, 4)
-				|| memcmp(&pFrame->arp_dst_ipaddr, &pFrame->arp_src_ipaddr, 4))		//GARP 0PCODE 0X0002
+			if (isReplyPacketARPorGARP(pFrame))		//GARP 0PCODE 0X0002
 			{
 				for (int i = 0; i < table.GetSize(); i++)
 				{
@@ -91,10 +88,9 @@ BOOL CArpLayer::Receive(unsigned char* ppayload)
 			//여기까지요test
 		}
 	}
-	else if (memcmp(&pFrame->arp_src_ipaddr, &pFrame->arp_dst_ipaddr, 4) == 0 &&
-		memcmp(&pFrame->arp_dst_ipaddr ,&m_sHeader.arp_src_ipaddr, 4) == 0) {
+	else if (isPacketGARP(pFrame)) {
 		if (ntohs(pFrame->op) == 0x0001) {
-			if(memcmp(&pFrame->arp_src_macaddr, &m_sHeader.arp_src_macaddr, 6) != 0){
+			if(memcmp(&pFrame->arp_src_macaddr, &m_sHeader.arp_src_macaddr, 6) != 0){ // garp request is not mine
 				pFrame = (PARP_HEADER)makeReplyPacket( (unsigned char*) pFrame, (ETHERNET_ADDR*)&m_sHeader.arp_src_macaddr.e_addr, (IP_ADDR*)&m_sHeader.arp_src_ipaddr.i_addr);
 				pFrame->op = 0x0200;		//타입재설정
 
@@ -105,13 +101,42 @@ BOOL CArpLayer::Receive(unsigned char* ppayload)
 			}
 		}
 
-		if (ntohs(pFrame->op) == 0x0002) {
-			if (memcmp(&pFrame->arp_dst_macaddr, &m_sHeader.arp_src_macaddr, 6) == 0) {
+		if (ntohs(pFrame->op) == 0x0002) { 
+			if (memcmp(&pFrame->arp_dst_macaddr, &m_sHeader.arp_src_macaddr, 6) == 0) { // garp reply is mine
 				InsertTable(pFrame->arp_src_ipaddr, pFrame->arp_src_macaddr, true);
 			}
 		}
 	}
 	return bSuccess;
+}
+
+bool CArpLayer::isPacketGARP(const PARP_HEADER  pFrame)
+{
+	return memcmp(&pFrame->arp_src_ipaddr, &pFrame->arp_dst_ipaddr, 4) == 0 &&
+		memcmp(&pFrame->arp_dst_ipaddr, &m_sHeader.arp_src_ipaddr, 4) == 0;
+}
+
+bool CArpLayer::isReplyPacketARPorGARP(const PARP_HEADER pFrame)
+{
+	return !memcmp(&pFrame->arp_dst_ipaddr, &m_sHeader.arp_src_ipaddr, 4)
+		|| memcmp(&pFrame->arp_dst_ipaddr, &pFrame->arp_src_ipaddr, 4);
+}
+
+bool CArpLayer::isProxyTableEntryAndPacketRequest(const PARP_HEADER pFrame, int i)
+{
+	return memcmp(pFrame->arp_dst_ipaddr.i_addr, proxyTable.GetAt(i).cache_ipaddr.i_addr, 4) == 0
+		&& (ntohs(pFrame->op) == 0x0001);
+}
+
+bool CArpLayer::isProxyTableNotEmptyAndNotGarp(const PARP_HEADER pFrame)
+{
+	return !proxyTable.IsEmpty()
+		&& memcmp(&pFrame->arp_src_ipaddr, &pFrame->arp_dst_ipaddr, 4) != 0;
+}
+
+bool CArpLayer::isReceivePacketMine(const PARP_HEADER pFrame)
+{
+	return memcmp(&pFrame->arp_dst_ipaddr, &m_sHeader.arp_src_ipaddr, 4) == 0;
 }
 
 
