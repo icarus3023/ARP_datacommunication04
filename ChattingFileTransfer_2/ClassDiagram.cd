@@ -1,0 +1,123 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="CAboutDlg" Collapsed="true">
+    <Position X="12" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAABAABAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ArpAppDlg.cpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CIPCApp" Collapsed="true">
+    <Position X="15.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAABAAAAAAAAAAAAAAAAAQAAAAAAAAAAAA=</HashCode>
+      <FileName>arp.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CArpAppDlg" Collapsed="true">
+    <Position X="5" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>WBCIEWEAEIAAAAgIAJAAAAAIUALEAAYQYABAIQCQiQA=</HashCode>
+      <FileName>ArpAppDlg.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CArpLayer" Collapsed="true">
+    <Position X="7.25" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAwAAEABAAAgACFAEEAABAQAAAwgAAAQpAAQEAAgAQA=</HashCode>
+      <FileName>ArpLayer.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CBaseLayer" Collapsed="true">
+    <Position X="5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QCBEAAABAAAAgAAEAEAAAAEBABAAAAAYgAAAQAAAEAA=</HashCode>
+      <FileName>BaseLayer.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CEthernetLayer" Collapsed="true">
+    <Position X="2.75" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAEACAQCEEAAAAQAARAAEAQgAAAAAABAAA=</HashCode>
+      <FileName>EthernetLayer.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CExplorer1" Collapsed="true">
+    <Position X="13.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>dCgYQJVEAJJBECtMAgERSMAgiQBMFEVQsAFaCgAITwI=</HashCode>
+      <FileName>explorer1.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CIPLayer" Collapsed="true">
+    <Position X="9.5" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAgAAAAAACAAAEAAQAAAAEQEAEBQAAQAAAAAAAA=</HashCode>
+      <FileName>IPLayer.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CLayerManager" Collapsed="true">
+    <Position X="12" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ADBAAAAAQAAABAAAAIAAAAAAAASIBBEhgAAACAAKCAA=</HashCode>
+      <FileName>LayerManager.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CNILayer" Collapsed="true">
+    <Position X="0.5" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQQAAAAAAAAAAAAAAEAAAABAAAAAAEAQgCBQBAAgBIA=</HashCode>
+      <FileName>NILayer.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CProxyDlg" Collapsed="true">
+    <Position X="13.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAQAAAAAAAABAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ProxyDlg.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ProxyDlg" Collapsed="true">
+    <Position X="15.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAoAABAAAAAAAABAACAAAAEAADACAAAAAAAAQAAA=</HashCode>
+      <FileName>ProxyDlg.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Struct Name="_ETHERNET_ADDR" Collapsed="true">
+    <Position X="5.25" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>StdAfx.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="_IP_ADDR" Collapsed="true">
+    <Position X="1.25" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>StdAfx.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Typedef Name="ETHERNET_ADDR" Collapsed="true">
+    <Position X="5.25" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>StdAfx.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="IP_ADDR" Collapsed="true">
+    <Position X="1.25" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>StdAfx.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Enum Name="__unnamed_enum_0002_1" Collapsed="true">
+    <Position X="12" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAEAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ArpLayer.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Font Name="Malgun Gothic" Size="9" />
+</ClassDiagram>
