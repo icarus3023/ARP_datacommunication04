@@ -39,7 +39,7 @@ BOOL CArpLayer::Receive(unsigned char* ppayload)
 	{
 		for (int i = 0; i < proxyTable.GetSize(); i++) {
 			if (isProxyTableEntryAndPacketRequest(pFrame, i)) { // proxy ARP : 프록시 테이블 검사 (ip주소 있는지 & request이면)
-				InsertTable(pFrame->arp_src_ipaddr, pFrame->arp_src_macaddr, true);
+					InsertTable(pFrame->arp_src_ipaddr, pFrame->arp_src_macaddr, true);
 
 				pFrame = (PARP_HEADER)makeReplyPacket( (unsigned char*) pFrame, (ETHERNET_ADDR*)&proxyTable.GetAt(i).cache_enetaddr.e_addr, (IP_ADDR*)&proxyTable.GetAt(i).cache_ipaddr.i_addr);
 				SendUnderLayerReply(pFrame);
@@ -56,7 +56,8 @@ BOOL CArpLayer::Receive(unsigned char* ppayload)
 			pFrame = (PARP_HEADER)makeReplyPacket( (unsigned char*) pFrame, (ETHERNET_ADDR*)&m_sHeader.arp_src_macaddr.e_addr, (IP_ADDR*)&m_sHeader.arp_src_ipaddr.i_addr);
 
 			// 응답모드로 요청자에게 패킷 다시날림
-			InsertTable(pFrame->arp_dst_ipaddr, pFrame->arp_dst_macaddr, true);
+			if(isSameTable(pFrame->arp_dst_ipaddr.S_un.s_ip_addr)) InsertTable(pFrame->arp_dst_ipaddr, pFrame->arp_dst_macaddr, true);
+			
 			if (isReceivePacketMine(pFrame)) {
 				SendUnderLayerReply(pFrame);
 			}
@@ -208,8 +209,8 @@ BOOL CArpLayer::isSameTable(unsigned char * pAddress)
 	{
 		if (memcmp(&table[i].cache_ipaddr.i_addr,pAddress, 4) == 0)
 		{
-			return true;
+			return false;
 		}
 	}
-	return false;
+	return true;
 }
