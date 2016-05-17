@@ -395,12 +395,16 @@ void CArpAppDlg::OnTimer(UINT nIDEvent)
 		BOOL isComplite = m_ARP->table.GetAt(i).cache_type;
 		int	ArpTTL = m_ARP->table.GetAt(i).cache_ttl;
 		m_ARP->table.GetAt(i).cache_ttl++;
-		if (isTimeOut(isComplite, ArpTTL)) { m_ARP->table.RemoveAt(i); continue; }
+		if (isTimeOut(isComplite, ArpTTL)) {
+			m_ARP->table.RemoveAt(i); 
+			i--;
+			continue; 
+		}
 		RawIPAddr = m_ARP->table.GetAt(i).cache_ipaddr.S_un.s_ip_addr;
 		type = m_ARP->table.GetAt(i).cache_type;
 		ipmsg.Format(_T("%d.%d.%d.%d"), RawIPAddr[0], RawIPAddr[1], RawIPAddr[2], RawIPAddr[3]);
 
-		if (i >= 0 && !m_ARP->table.IsEmpty() && m_ARP->table.GetAt(i).cache_type == 1)
+		if (isArpTableNotEmptyAndComplite(isComplite))
 		{
 			unsigned char* RawEthernetAddr = m_ARP->table.GetAt(i).cache_enetaddr.S_un.s_ether_addr;
 			macmsg.Format(_T("%02x:%02x:%02x:%02x:%02x:%02x"), RawEthernetAddr[0], RawEthernetAddr[1], RawEthernetAddr[2],
@@ -411,6 +415,11 @@ void CArpAppDlg::OnTimer(UINT nIDEvent)
 		m_ListArpTable.AddString(msg);
 	}
 	m_ListArpTable.UpdateData(false);
+}
+
+bool CArpAppDlg::isArpTableNotEmptyAndComplite(const BOOL &isComplite)
+{
+	return !m_ARP->table.IsEmpty() && isComplite == 1;
 }
 
 bool CArpAppDlg::isTimeOut(const BOOL &isComplite, int ArpTTL)
@@ -495,13 +504,6 @@ void CArpAppDlg::OnBnClickedGratitudearpsend()
 	m_IP->SetDstIPAddress(src_ip);
 	m_ARP->SetSourceAddress(src_ip);
 	m_ARP->SetDestinAddress(src_ip);
-
-	dst_ethernet.S_un.s_un_byte.e0 = 0xff;
-	dst_ethernet.S_un.s_un_byte.e1 = 0xff;
-	dst_ethernet.S_un.s_un_byte.e2 = 0xff;
-	dst_ethernet.S_un.s_un_byte.e3 = 0xff;
-	dst_ethernet.S_un.s_un_byte.e4 = 0xff;
-	dst_ethernet.S_un.s_un_byte.e5 = 0xff;
 
 	CGratitousContol.GetWindowText(CGratitousDevAddr);
 	macStr = LPSTR(LPCTSTR(CGratitousDevAddr));

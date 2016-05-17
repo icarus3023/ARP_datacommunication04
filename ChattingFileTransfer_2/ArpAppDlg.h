@@ -63,6 +63,7 @@ protected:
 	afx_msg void OnButtonAddrSet();
 	
 	afx_msg void OnTimer(UINT nIDEvent);
+	bool isArpTableNotEmptyAndComplite(const BOOL &isComplite);
 	bool isTimeOut(const BOOL &isComplite, int ArpTTL);
 	afx_msg void OnAddFile();
 	
