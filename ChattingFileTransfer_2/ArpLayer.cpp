@@ -88,7 +88,7 @@ BOOL CArpLayer::Receive(unsigned char* ppayload)
 					}
 				}
 			}
-			//여기까지요
+			//여기까지요test
 		}
 	}
 	else if (memcmp(&pFrame->arp_src_ipaddr, &pFrame->arp_dst_ipaddr, 4) == 0 &&
