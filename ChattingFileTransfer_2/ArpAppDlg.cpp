@@ -9,7 +9,7 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 /////////////////////////////////////////////////////////////////////////////
-// CAboutDlg dialog used for App About
+// CAboutDlg dialog used for App About123
 
 class CAboutDlg : public CDialog
 {
@@ -316,7 +316,7 @@ BOOL CArpAppDlg::PreTranslateMessage(MSG* pMsg)
 	return CDialog::PreTranslateMessage(pMsg);
 }
 
-void CArpAppDlg::SetDlgState(int state) // ´ÙÀÌ¾ó·Î±× ÃÊ±âÈ­ ºÎºĞ
+void CArpAppDlg::SetDlgState(int state) // ë‹¤ì´ì–¼ë¡œê·¸ ì´ˆê¸°í™” ë¶€ë¶„
 {
 	UpdateData(TRUE);
 	int i;
@@ -335,20 +335,20 @@ void CArpAppDlg::SetDlgState(int state) // ´ÙÀÌ¾ó·Î±× ÃÊ±âÈ­ ºÎºĞ
 
 	switch (state)
 	{
-	case IPC_INITIALIZING: // Ã¹ È­¸é ¼¼ÆÃ
+	case IPC_INITIALIZING: // ì²« í™”ë©´ ì„¸íŒ…
 		pSendButton->EnableWindow(FALSE);
 		m_ListArpTable.EnableWindow(TRUE);
 		break;
-	case IPC_READYTOSEND: // Send(S)¹öÆ°À» ´­·¶À» ¶§ ¼¼ÆÃ
+	case IPC_READYTOSEND: // Send(S)ë²„íŠ¼ì„ ëˆŒë €ì„ ë•Œ ì„¸íŒ…
 		break;
 	case IPC_WAITFORACK:	break;
 	case IPC_ERROR:		break;
-	case IPC_ADDR_SET:	// ¼³Á¤(&O)¹öÆ°À» ´­·¶À» ¶§
+	case IPC_ADDR_SET:	// ì„¤ì •(&O)ë²„íŠ¼ì„ ëˆŒë €ì„ ë•Œ
 		pSendButton->EnableWindow(TRUE);
 		pEnetNameCombo->EnableWindow(FALSE);
 		break;
-	case IPC_ADDR_RESET: // Àç¼³Á¤(&R)¹öÆ°À» ´­·¶À» ¶§
-		pSetAddrButton->SetWindowText("¼³Á¤(&O)");
+	case IPC_ADDR_RESET: // ì¬ì„¤ì •(&R)ë²„íŠ¼ì„ ëˆŒë €ì„ ë•Œ
+		pSetAddrButton->SetWindowText("ì„¤ì •(&O)");
 		pChkButton->EnableWindow(TRUE);
 		pDstIPEdit->EnableWindow(TRUE);
 		pEnetNameCombo->EnableWindow(TRUE);
@@ -379,7 +379,7 @@ void CArpAppDlg::OnTimer(UINT nIDEvent)
 	CDialog::OnTimer(nIDEvent);
 	m_ListArpTable.UpdateData(true);
 
-	//timer°¡ ½ÇÇàµÉ ¶§¸¶´Ù(1ÃÊ) tableÀ» °Ë»öÇÏ¿© cache.type==trueÀÎ entry¸¦ È®ÀÎ ÈÄ List Table¿¡ ÀÖ´Ù¸é ±âÁ¸ ¹®ÀÚ¿­À» º¯°æ, ¾ø´Ù¸é Ãß°¡ÇÔ.
+	//timerê°€ ì‹¤í–‰ë  ë•Œë§ˆë‹¤(1ì´ˆ) tableì„ ê²€ìƒ‰í•˜ì—¬ cache.type==trueì¸ entryë¥¼ í™•ì¸ í›„ List Tableì— ìˆë‹¤ë©´ ê¸°ì¡´ ë¬¸ìì—´ì„ ë³€ê²½, ì—†ë‹¤ë©´ ì¶”ê°€í•¨.
 	m_ListArpTable.ResetContent();
 	for (int i = 0; i < m_ARP->table.GetSize(); i++)
 	{
