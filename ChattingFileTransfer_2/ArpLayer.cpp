@@ -39,7 +39,7 @@ BOOL CArpLayer::Receive(unsigned char* ppayload)
 	{
 		for (int i = 0; i < proxyTable.GetSize(); i++) {
 			if (isProxyTableEntryAndPacketRequest(pFrame, i)) { // proxy ARP : 프록시 테이블 검사 (ip주소 있는지 & request이면)
-				if (isSameTable(pFrame->arp_dst_ipaddr.S_un.s_ip_addr))	InsertTable(pFrame->arp_src_ipaddr, pFrame->arp_src_macaddr, true);
+				if (isInTableEntry(pFrame->arp_dst_ipaddr.S_un.s_ip_addr))	InsertTable(pFrame->arp_src_ipaddr, pFrame->arp_src_macaddr, true);
 				pFrame = (PARP_HEADER)makeReplyPacket( (unsigned char*) pFrame, (ETHERNET_ADDR*)&proxyTable.GetAt(i).cache_enetaddr.e_addr, (IP_ADDR*)&proxyTable.GetAt(i).cache_ipaddr.i_addr);
 				SendUnderLayerOp(pFrame,0x0200, ARP_MAX_LENGTH);
 				return bSuccess;
@@ -55,7 +55,7 @@ BOOL CArpLayer::Receive(unsigned char* ppayload)
 			pFrame = (PARP_HEADER)makeReplyPacket( (unsigned char*) pFrame, (ETHERNET_ADDR*)&m_sHeader.arp_src_macaddr.e_addr, (IP_ADDR*)&m_sHeader.arp_src_ipaddr.i_addr);
 
 			// 응답모드로 요청자에게 패킷 다시날림
-			if(isSameTable(pFrame->arp_dst_ipaddr.S_un.s_ip_addr)) InsertTable(pFrame->arp_dst_ipaddr, pFrame->arp_dst_macaddr, true);
+			if(isInTableEntry(pFrame->arp_dst_ipaddr.S_un.s_ip_addr)) InsertTable(pFrame->arp_dst_ipaddr, pFrame->arp_dst_macaddr, true);
 			
 			if (isReceivePacketMine(pFrame)) {
 				SendUnderLayerOp(pFrame,0x0200, ARP_MAX_LENGTH);
@@ -148,7 +148,7 @@ BOOL CArpLayer::Send(unsigned char* ppayload, int nlength)
 		}
 	}
 	memset(m_sHeader.arp_dst_macaddr.e_addr, 0xff, 6);		//목적지 Device Address를 Brodcast(0xff)로 설정함
-	SendUnderLayerOp(m_sHeader, 0x0100, nlength + ARP_MAX_LENGTH);
+	SendUnderLayerOp(&m_sHeader, 0x0100, nlength + ARP_MAX_LENGTH);
 
 	return false;
 }
@@ -197,7 +197,7 @@ BOOL CArpLayer::InsertProxyTable(IP_ADDR proxy_ipaddr, ETHERNET_ADDR proxyDevice
 	return true;
 }
 
-BOOL CArpLayer::isSameTable(unsigned char * pAddress)
+BOOL CArpLayer::isInTableEntry(unsigned char * pAddress)
 {
 	for (int i = 0; i < table.GetSize(); i++)
 	{

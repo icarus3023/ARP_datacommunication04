@@ -281,10 +281,10 @@ void CArpAppDlg::SendData()
 
 	m_ETH->SetEnetDstAddress(desaddress);
 
-	if (!m_ARP->isSameTable(dst_ip))
+	if (m_ARP->isInTableEntry(dst_ip))
 	{
 		m_ARP->InsertTable(dst_ip_cache, dst_ethernet);
-		msg.Format(_T("%d.%d.%d.%d\t???????\tInComplete"), dst_ip[0], dst_ip[1], dst_ip[2], dst_ip[3]);
+		msg.Format(_T("%d.%d.%d.%d\t???????\tincomplete"), dst_ip[0], dst_ip[1], dst_ip[2], dst_ip[3]);
 		m_ListArpTable.AddString(msg);
 	}
 

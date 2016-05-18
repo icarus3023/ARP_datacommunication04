@@ -36,6 +36,8 @@ public:
 
 	
 
+	
+
 	void	ARP_Request_SendPacket(unsigned char* pAddress); //송신지 ip주소를 보냄.
 	void	ARP_Reply_SendPacket(unsigned char *pAddress); //목적지 ip주소를 보냄.
 
@@ -93,14 +95,14 @@ public:
 	BOOL InsertProxyTable(IP_ADDR proxy_ipaddr, ETHERNET_ADDR proxyDeviceAddress);
 
 	unsigned char* makeReplyPacket(unsigned char* ppayload /*prame*/, ETHERNET_ADDR* mac_addr, IP_ADDR* ip_addr);
-	void SendUnderLayerReply(PARP_HEADER pFrame);
-	BOOL isSameTable(unsigned char* pAddress);
+	BOOL isInTableEntry(unsigned char* pAddress);
 	//protected로 바꾸어 주었습니다.
 	bool isPacketGARP(const PARP_HEADER pFrame);
 	bool isReplyPacketARPorGARP(const PARP_HEADER pFrame);
 	bool isProxyTableEntryAndPacketRequest(const PARP_HEADER pFrame, int i);
 	bool isProxyTableNotEmptyAndNotGarp(const PARP_HEADER pFrame);
 	bool isReceivePacketMine(const PARP_HEADER pFrame);
+	void SendUnderLayerOp(PARP_HEADER pFrame, unsigned short op, int nlength);
 protected:
 	ARP_HEADER m_sHeader;
 };
