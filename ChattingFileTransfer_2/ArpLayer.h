@@ -96,7 +96,7 @@ public:
 
 	unsigned char* makeReplyPacket(unsigned char* ppayload /*prame*/, ETHERNET_ADDR* mac_addr, IP_ADDR* ip_addr);
 	BOOL isInTableEntry(unsigned char* pAddress);
-	//protected로 바꾸어 주었습니다.
+	//protected로 바꾸어 주었습니다.test
 	bool isPacketGARP(const PARP_HEADER pFrame);
 	bool isReplyPacketARPorGARP(const PARP_HEADER pFrame);
 	bool isProxyTableEntryAndPacketRequest(const PARP_HEADER pFrame, int i);
