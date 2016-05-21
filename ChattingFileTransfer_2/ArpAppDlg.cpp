@@ -323,6 +323,8 @@ BOOL CArpAppDlg::Receive(unsigned char *ppayload)
 	m_ARP->SetSourceAddress(src_ip);
 	m_ARP->setSrcHd((unsigned char*)OidData->Data);
 	m_ETH->SetEnetSrcAddress(OidData->Data);
+
+
 	SetDstEthernetAddress();
 	m_ETH->SetEnetDstAddress(desaddress);
 	m_ETH->setType(0x0008);
