@@ -86,6 +86,9 @@ BOOL CEthernetLayer::Receive( unsigned char* ppayload )
 		else if (ntohs(pFrame->enet_type) == 0x0806 ) {
 			bSuccess = mp_aUpperLayer[1]->Receive((unsigned char*)pFrame->enet_data);
 		}
+		else if (ntohs(pFrame->enet_type) == 0x0800) {
+			bSuccess = mp_aUpperLayer[0]->Receive((unsigned char*)pFrame->enet_data);
+		}
 	}
 	return bSuccess ;
 }
