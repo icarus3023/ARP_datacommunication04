@@ -40,7 +40,13 @@ public:
 		unsigned char ip_data[IP_DATA_SIZE]; // variable length data
 		
 	} IPLayer_HEADER, *PIPLayer_HEADER ;
-
+	typedef struct _CACHE_ENTRY {
+		IP_ADDR				cache_ipaddr;
+		IP_ADDR				cache_netmaskaddr;
+		IP_ADDR				cache_gatewayaddr;
+		unsigned short		cache_flag;
+	} STATIC_CACHE;
+	CArray<STATIC_CACHE> static_table;
 protected:
 	IPLayer_HEADER	m_sHeader ;
 };
