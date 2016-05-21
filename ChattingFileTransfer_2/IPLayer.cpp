@@ -5,7 +5,7 @@
 #include "stdafx.h"
 #include "arp.h"
 #include "IPLayer.h"
-
+#include "NILayer.h"
 #ifdef _DEBUG
 #undef THIS_FILE
 static char THIS_FILE[]=__FILE__;
@@ -72,11 +72,30 @@ BOOL CIPLayer::Receive(unsigned char* ppayload)
 	
 	BOOL bSuccess = FALSE ;
 
+	for (int i = 0; i < static_table.GetSize(); i++) {
+		if (memcmp((char*)static_table[i].cache_ipaddr, (char*)((short)pFrame->ip_dst & (short)static_table[i].cache_netmaskaddr),4) == 0) { // static router의 네트워크 아이디가 송신측의 목적지주소를 서브넷팅한 네트워크 주소와 같으면
+			if (static_table[i].cache_flag==0) {	// flag is up
+				bSuccess = mp_aUpperLayer[0]->Receive((unsigned char*)pFrame->ip_data); // ip에서는 icmp layer로 패킷 전송.
+				return bSuccess;
+			}
+			else if (static_table[i].cache_flag == 1) { // flag is UG
+				this->SetDstIPAddress(static_table[i].cache_gatewayaddr);				
+				if (mp_aUpperLayer[1]->Receive((unsigned char*)static_table[i].static_interface)) {
+					bSuccess = mp_UnderLayer->Send((unsigned char*)&m_sHeader, IP_HEADER_SIZE);
+					return bSuccess;
+				}
+			}
+		}
+	}
 	if(memcmp((char *)pFrame->ip_dst,(char *)m_sHeader.ip_src,4) ==0 &&
 		memcmp((char *)pFrame->ip_src,(char *)m_sHeader.ip_src,4) !=0 && 
 		memcmp((char *)pFrame->ip_src,(char *)m_sHeader.ip_dst,4) ==0 )
 	{
 		bSuccess = mp_aUpperLayer[0]->Receive((unsigned char*)pFrame->ip_data);
 	}
+	
+	
+	//들어오는패킷이 라우터 테이블에 있는지 검사. -> 해당 패킷이 gateway에있는지 up에있는지 (flag)를 통해 검사.
+	//-> subnet한 네트워크 id가 up에 있으면 해당 네트워크id에 arp수행, gateway일때는 다른 router로 이동 다른라우터에 해당 네트워크id에 arp수행, reply가 오면 ping패킷으로 reply를 보냄.
 	return bSuccess ;
 }

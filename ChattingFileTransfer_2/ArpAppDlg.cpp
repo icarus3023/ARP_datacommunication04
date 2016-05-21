@@ -294,7 +294,40 @@ void CArpAppDlg::SendData()
 
 BOOL CArpAppDlg::Receive(unsigned char *ppayload)
 {
-	int len_ppayload = strlen((char *)ppayload);
+	int static_interface= (int)ppayload;
+
+	m_NI->SetAdapterNumber(static_interface);
+	device = m_NI->GetAdapterObject(static_interface);
+	adapter = PacketOpenAdapter(device->name);
+
+	OidData = (PPACKET_OID_DATA)malloc(sizeof(PACKET_OID_DATA));
+	OidData->Oid = 0x01010101;
+	OidData->Length = 6;
+	PacketRequest(adapter, FALSE, OidData);
+
+	for (pcap_addr_t *a = device->addresses; a != NULL; a = a->next) {
+		if (a->addr->sa_family == AF_INET) {
+			IpAddress = inet_ntoa(((struct sockaddr_in*)a->addr)->sin_addr);
+		}
+	}
+
+	sIP = IpAddress;
+	sIP.Replace(_T('.'), NULL);
+	resolveAddr = ResolveAddr(sIP, 4);
+	for (int i = 0; i < 4; i++)
+	{
+		src_ip[3 - i] = resolveAddr >> (i * 8);
+	}
+
+	m_IP->SetSrcIPAddress(src_ip);
+	m_ARP->SetSourceAddress(src_ip);
+	m_ARP->setSrcHd((unsigned char*)OidData->Data);
+	m_ETH->SetEnetSrcAddress(OidData->Data);
+	SetDstEthernetAddress();
+	m_ETH->SetEnetDstAddress(desaddress);
+	m_ETH->setType(0x0008);
+	m_NI->PacketStartDriver();
+	// adpter�� ���� ip�ּҸ� �� ������ �ּҷ� ������.
 	return TRUE;
 }
 
@@ -316,7 +349,7 @@ BOOL CArpAppDlg::PreTranslateMessage(MSG* pMsg)
 	return CDialog::PreTranslateMessage(pMsg);
 }
 
-void CArpAppDlg::SetDlgState(int state) // 다이얼로그 초기화 부분
+void CArpAppDlg::SetDlgState(int state) // ?�이?�로�?초기??부�?
 {
 	UpdateData(TRUE);
 	int i;
@@ -335,20 +368,20 @@ void CArpAppDlg::SetDlgState(int state) // 다이얼로그 초기화 부분
 
 	switch (state)
 	{
-	case IPC_INITIALIZING: // 첫 화면 세팅
+	case IPC_INITIALIZING: // �??�면 ?�팅
 		pSendButton->EnableWindow(FALSE);
 		m_ListArpTable.EnableWindow(TRUE);
 		break;
-	case IPC_READYTOSEND: // Send(S)버튼을 눌렀을 때 세팅
+	case IPC_READYTOSEND: // Send(S)버튼???��??????�팅
 		break;
 	case IPC_WAITFORACK:	break;
 	case IPC_ERROR:		break;
-	case IPC_ADDR_SET:	// 설정(&O)버튼을 눌렀을 때
+	case IPC_ADDR_SET:	// ?�정(&O)버튼???��?????
 		pSendButton->EnableWindow(TRUE);
 		pEnetNameCombo->EnableWindow(FALSE);
 		break;
-	case IPC_ADDR_RESET: // 재설정(&R)버튼을 눌렀을 때
-		pSetAddrButton->SetWindowText("설정(&O)");
+	case IPC_ADDR_RESET: // ?�설??&R)버튼???��?????
+		pSetAddrButton->SetWindowText("?�정(&O)");
 		pChkButton->EnableWindow(TRUE);
 		pDstIPEdit->EnableWindow(TRUE);
 		pEnetNameCombo->EnableWindow(TRUE);
@@ -379,7 +412,7 @@ void CArpAppDlg::OnTimer(UINT nIDEvent)
 	CDialog::OnTimer(nIDEvent);
 	m_ListArpTable.UpdateData(true);
 
-	//timer가 실행될 때마다(1초) table을 검색하여 cache.type==true인 entry를 확인 후 List Table에 있다면 기존 문자열을 변경, 없다면 추가함.
+	//timer가 ?�행???�마??1�? table??검?�하??cache.type==true??entry�??�인 ??List Table???�다�?기존 문자?�을 변�? ?�다�?추�???
 	m_ListArpTable.ResetContent();
 	for (int i = 0; i < m_ARP->table.GetSize(); i++)
 	{
