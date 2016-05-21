@@ -8,6 +8,13 @@
 
 #include "BaseLayer.h"
 
+// 경로 유효상태
+#define UP_FLAG 0x01
+// 경로방향 : 라우터
+#define GATE_FLAG 0x02
+// 경로방향 : 호스트
+#define HOST_FLAG 0x04
+
 class CIPLayer 
 : public CBaseLayer  
 {
@@ -46,11 +53,25 @@ public:
 		IP_ADDR				cache_gatewayaddr;
 		unsigned short		cache_flag;
 	} STATIC_CACHE;
+
+	// 라우터 테이블
+	typedef struct ROUTE_TABLE_ITEM {
+		// 목적주소
+		IP_ADDR des;
+		// 마스크 범위
+		IP_ADDR netmask;
+		// 게이트웨이 주소
+		IP_ADDR gateway;
+		// flag : 경로의 상태 및 위치
+		char flag;
+		// 이더넷 카드 정보
+		int ethcard;
+		// 목적위치까지의 Hop 갯수
+		int metric;
+	}ROUTE_TABLE_ITEM;
+
+
 	CArray<STATIC_CACHE> static_table;
 protected:
 	IPLayer_HEADER	m_sHeader ;
 };
-
-
-
-
