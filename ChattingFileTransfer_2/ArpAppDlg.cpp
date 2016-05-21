@@ -2,6 +2,7 @@
 #include "arp.h"
 #include "ArpAppDlg.h"
 #include "ProxyDlg.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -91,6 +92,7 @@ void CArpAppDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_GRATITUDEARPEDIT, CGratitousDevAddr);
 	DDV_MaxChars(pDX, CGratitousDevAddr, 12);
 	DDX_Control(pDX, IDC_GRATITUDEARPEDIT, CGratitousContol);
+	DDX_Control(pDX, IDC_LIST2, srt_CList);
 }
 
 BEGIN_MESSAGE_MAP(CArpAppDlg, CDialog)
@@ -106,6 +108,7 @@ BEGIN_MESSAGE_MAP(CArpAppDlg, CDialog)
 	ON_BN_CLICKED(IDC_PROXYTABLEADD, &CArpAppDlg::OnBnClickedProxytableadd)
 	ON_BN_CLICKED(IDC_PROXYTABLEDELETE, &CArpAppDlg::OnClickedProxytabledelete)
 	ON_BN_CLICKED(IDC_GRATITUDEARPSEND, &CArpAppDlg::OnBnClickedGratitudearpsend)
+	ON_BN_CLICKED(IDC_BUTTON4, &CArpAppDlg::OnBnClickedButton4)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -136,18 +139,53 @@ BOOL CArpAppDlg::OnInitDialog()
 	SetDlgState(IPC_INITIALIZING);
 	SetDlgState(CFT_COMBO_SET);
 
+	// TODO: Add extra initialization here
+
+
+	char *SRT[] = { "Destination\n" , "NetMask\n" , "Gateway\n" , "Flag\n" , "Interface\n" , "Metric\n" };
+
+	LV_COLUMN lCol; // https://msdn.microsoft.com/en-us/library/windows/desktop/bb774743(v=vs.85).aspx
+
+	lCol.fmt = LVCFMT_LEFT;
+	lCol.mask = LVCF_TEXT | LVCF_WIDTH;	// pszText | cx 
+
+	// Static Routing Table
+	for (int i = 0; i < 6; i++)
+	{
+		lCol.pszText = SRT[i];  // colmun name
+		lCol.iSubItem = i;  // index 
+		lCol.cx = 9 * strlen(SRT[i]);// column width
+		srt_CList.InsertColumn(i, &lCol);  // insert to column
+	}
+
+	srt_CList.InsertItem(0, _T("1"));   // 첫째행(0), 첫째열에 삽입
+	srt_CList.SetItem(0, 1, LVIF_TEXT, _T("NetMask"), NULL, NULL, NULL, NULL);   // 첫째행(0), 둘째열(1)에 삽입 
+
+	srt_CList.InsertItem(1, _T("2"));   // 둘째행(1), 첫째열에 삽입
+	srt_CList.SetItem(1, 1, LVIF_TEXT, _T("33535"), NULL, NULL, NULL, NULL);   // 둘째행(1), 둘째열(1)에 삽입 
+
+	srt_CList.InsertItem(2, _T("3"));
+	srt_CList.SetItem(2, 3, LVIF_TEXT, _T("asdasd"), NULL, NULL, NULL, NULL);
+
 	return TRUE;
 }
+
+
+
+
+
 void CArpAppDlg::OnSysCommand(UINT nID, LPARAM lParam)
 {
 	if (nID == SC_CLOSE)
-	{
+	{	/*
 		if (MessageBox("Are you sure ?",
 			"Question",
 			MB_YESNO | MB_ICONQUESTION)
 			== IDNO)
 			return;
-		else EndofProcess();
+		else 
+		*/
+		EndofProcess();
 	}
 
 	if ((nID & 0xFFF0) == IDM_ABOUTBOX)
@@ -511,5 +549,16 @@ void CArpAppDlg::SetDstEthernetAddress()
 	dst_ethernet.S_un.s_un_byte.e3 = 0xff;
 	dst_ethernet.S_un.s_un_byte.e4 = 0xff;
 	dst_ethernet.S_un.s_un_byte.e5 = 0xff;
+
+}
+
+
+void CArpAppDlg::OnBnClickedButton4()
+{
+	// TODO: Add your control notification handler code here
+
+	SubDlg test;
+	test.DoModal();
+
 
 }
