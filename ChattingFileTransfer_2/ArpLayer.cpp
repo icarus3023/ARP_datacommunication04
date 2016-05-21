@@ -201,7 +201,7 @@ BOOL CArpLayer::isInTableEntry(unsigned char * pAddress)
 {
 	for (int i = 0; i < table.GetSize(); i++)
 	{
-		if (memcmp(&table[i].cache_ipaddr.i_addr,pAddress, 4) == 0 && table[i].cache_type==1)
+		if (memcmp(&table[i].cache_ipaddr.i_addr,pAddress, 4) == 0 )
 		{
 			return false;
 		}
