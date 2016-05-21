@@ -12,10 +12,6 @@
 #include "ArpLayer.h"
 #include "afxwin.h"
 #include "resource.h"
-#include "afxcmn.h"
-#include "SubDlg.h"
-
-
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
@@ -168,8 +164,6 @@ public:
 	CString CGratitousDevAddr;
 	CEdit CGratitousContol;
 
-	CListCtrl srt_CList;
-	afx_msg void OnBnClickedButton4();
 };
 
 //{{AFX_INSERT_LOCATION}}

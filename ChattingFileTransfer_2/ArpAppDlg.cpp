@@ -2,7 +2,6 @@
 #include "arp.h"
 #include "ArpAppDlg.h"
 #include "ProxyDlg.h"
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -92,7 +91,6 @@ void CArpAppDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_GRATITUDEARPEDIT, CGratitousDevAddr);
 	DDV_MaxChars(pDX, CGratitousDevAddr, 12);
 	DDX_Control(pDX, IDC_GRATITUDEARPEDIT, CGratitousContol);
-	DDX_Control(pDX, IDC_LIST2, srt_CList);
 }
 
 BEGIN_MESSAGE_MAP(CArpAppDlg, CDialog)
@@ -108,7 +106,6 @@ BEGIN_MESSAGE_MAP(CArpAppDlg, CDialog)
 	ON_BN_CLICKED(IDC_PROXYTABLEADD, &CArpAppDlg::OnBnClickedProxytableadd)
 	ON_BN_CLICKED(IDC_PROXYTABLEDELETE, &CArpAppDlg::OnClickedProxytabledelete)
 	ON_BN_CLICKED(IDC_GRATITUDEARPSEND, &CArpAppDlg::OnBnClickedGratitudearpsend)
-	ON_BN_CLICKED(IDC_BUTTON4, &CArpAppDlg::OnBnClickedButton4)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -139,53 +136,18 @@ BOOL CArpAppDlg::OnInitDialog()
 	SetDlgState(IPC_INITIALIZING);
 	SetDlgState(CFT_COMBO_SET);
 
-	// TODO: Add extra initialization here
-
-
-	char *SRT[] = { "Destination\n" , "NetMask\n" , "Gateway\n" , "Flag\n" , "Interface\n" , "Metric\n" };
-
-	LV_COLUMN lCol; // https://msdn.microsoft.com/en-us/library/windows/desktop/bb774743(v=vs.85).aspx
-
-	lCol.fmt = LVCFMT_LEFT;
-	lCol.mask = LVCF_TEXT | LVCF_WIDTH;	// pszText | cx 
-
-	// Static Routing Table
-	for (int i = 0; i < 6; i++)
-	{
-		lCol.pszText = SRT[i];  // colmun name
-		lCol.iSubItem = i;  // index 
-		lCol.cx = 9 * strlen(SRT[i]);// column width
-		srt_CList.InsertColumn(i, &lCol);  // insert to column
-	}
-
-	srt_CList.InsertItem(0, _T("1"));   // 첫째행(0), 첫째열에 삽입
-	srt_CList.SetItem(0, 1, LVIF_TEXT, _T("NetMask"), NULL, NULL, NULL, NULL);   // 첫째행(0), 둘째열(1)에 삽입 
-
-	srt_CList.InsertItem(1, _T("2"));   // 둘째행(1), 첫째열에 삽입
-	srt_CList.SetItem(1, 1, LVIF_TEXT, _T("33535"), NULL, NULL, NULL, NULL);   // 둘째행(1), 둘째열(1)에 삽입 
-
-	srt_CList.InsertItem(2, _T("3"));
-	srt_CList.SetItem(2, 3, LVIF_TEXT, _T("asdasd"), NULL, NULL, NULL, NULL);
-
 	return TRUE;
 }
-
-
-
-
-
 void CArpAppDlg::OnSysCommand(UINT nID, LPARAM lParam)
 {
 	if (nID == SC_CLOSE)
-	{	/*
+	{
 		if (MessageBox("Are you sure ?",
 			"Question",
 			MB_YESNO | MB_ICONQUESTION)
 			== IDNO)
 			return;
-		else 
-		*/
-		EndofProcess();
+		else EndofProcess();
 	}
 
 	if ((nID & 0xFFF0) == IDM_ABOUTBOX)
@@ -332,7 +294,42 @@ void CArpAppDlg::SendData()
 
 BOOL CArpAppDlg::Receive(unsigned char *ppayload)
 {
-	int len_ppayload = strlen((char *)ppayload);
+	int static_interface= (int)ppayload;
+
+	m_NI->SetAdapterNumber(static_interface);
+	device = m_NI->GetAdapterObject(static_interface);
+	adapter = PacketOpenAdapter(device->name);
+
+	OidData = (PPACKET_OID_DATA)malloc(sizeof(PACKET_OID_DATA));
+	OidData->Oid = 0x01010101;
+	OidData->Length = 6;
+	PacketRequest(adapter, FALSE, OidData);
+
+	for (pcap_addr_t *a = device->addresses; a != NULL; a = a->next) {
+		if (a->addr->sa_family == AF_INET) {
+			IpAddress = inet_ntoa(((struct sockaddr_in*)a->addr)->sin_addr);
+		}
+	}
+
+	sIP = IpAddress;
+	sIP.Replace(_T('.'), NULL);
+	resolveAddr = ResolveAddr(sIP, 4);
+	for (int i = 0; i < 4; i++)
+	{
+		src_ip[3 - i] = resolveAddr >> (i * 8);
+	}
+
+	m_IP->SetSrcIPAddress(src_ip);
+	m_ARP->SetSourceAddress(src_ip);
+	m_ARP->setSrcHd((unsigned char*)OidData->Data);
+	m_ETH->SetEnetSrcAddress(OidData->Data);
+
+
+	SetDstEthernetAddress();
+	m_ETH->SetEnetDstAddress(desaddress);
+	m_ETH->setType(0x0008);
+	m_NI->PacketStartDriver();
+	// adpter�� ���� ip�ּҸ� �� ������ �ּҷ� ������.
 	return TRUE;
 }
 
@@ -354,7 +351,7 @@ BOOL CArpAppDlg::PreTranslateMessage(MSG* pMsg)
 	return CDialog::PreTranslateMessage(pMsg);
 }
 
-void CArpAppDlg::SetDlgState(int state) // 다이얼로그 초기화 부분
+void CArpAppDlg::SetDlgState(int state) // ?�이?�로�?초기??부�?
 {
 	UpdateData(TRUE);
 	int i;
@@ -373,20 +370,20 @@ void CArpAppDlg::SetDlgState(int state) // 다이얼로그 초기화 부분
 
 	switch (state)
 	{
-	case IPC_INITIALIZING: // 첫 화면 세팅
+	case IPC_INITIALIZING: // �??�면 ?�팅
 		pSendButton->EnableWindow(FALSE);
 		m_ListArpTable.EnableWindow(TRUE);
 		break;
-	case IPC_READYTOSEND: // Send(S)버튼을 눌렀을 때 세팅
+	case IPC_READYTOSEND: // Send(S)버튼???��??????�팅
 		break;
 	case IPC_WAITFORACK:	break;
 	case IPC_ERROR:		break;
-	case IPC_ADDR_SET:	// 설정(&O)버튼을 눌렀을 때
+	case IPC_ADDR_SET:	// ?�정(&O)버튼???��?????
 		pSendButton->EnableWindow(TRUE);
 		pEnetNameCombo->EnableWindow(FALSE);
 		break;
-	case IPC_ADDR_RESET: // 재설정(&R)버튼을 눌렀을 때
-		pSetAddrButton->SetWindowText("설정(&O)");
+	case IPC_ADDR_RESET: // ?�설??&R)버튼???��?????
+		pSetAddrButton->SetWindowText("?�정(&O)");
 		pChkButton->EnableWindow(TRUE);
 		pDstIPEdit->EnableWindow(TRUE);
 		pEnetNameCombo->EnableWindow(TRUE);
@@ -417,7 +414,7 @@ void CArpAppDlg::OnTimer(UINT nIDEvent)
 	CDialog::OnTimer(nIDEvent);
 	m_ListArpTable.UpdateData(true);
 
-	//timer가 실행될 때마다(1초) table을 검색하여 cache.type==true인 entry를 확인 후 List Table에 있다면 기존 문자열을 변경, 없다면 추가함.
+	//timer가 ?�행???�마??1�? table??검?�하??cache.type==true??entry�??�인 ??List Table???�다�?기존 문자?�을 변�? ?�다�?추�???
 	m_ListArpTable.ResetContent();
 	for (int i = 0; i < m_ARP->table.GetSize(); i++)
 	{
@@ -549,16 +546,5 @@ void CArpAppDlg::SetDstEthernetAddress()
 	dst_ethernet.S_un.s_un_byte.e3 = 0xff;
 	dst_ethernet.S_un.s_un_byte.e4 = 0xff;
 	dst_ethernet.S_un.s_un_byte.e5 = 0xff;
-
-}
-
-
-void CArpAppDlg::OnBnClickedButton4()
-{
-	// TODO: Add your control notification handler code here
-
-	SubDlg test;
-	test.DoModal();
-
 
 }
