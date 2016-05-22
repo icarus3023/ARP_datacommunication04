@@ -72,6 +72,11 @@ BOOL CArpLayer::Receive(unsigned char* ppayload)
 						memcpy(table.GetAt(i).cache_enetaddr.e_addr, pFrame->arp_src_macaddr.e_addr, 6);
 						table.GetAt(i).cache_type = true;
 						table.GetAt(i).cache_ttl = 0;
+						
+						mp_UnderLayer->SetDestinAddress(table.GetAt(i).cache_enetaddr.e_addr);
+						mp_UnderLayer->SetSourceAddress(m_sHeader.arp_src_macaddr.S_un.s_ether_addr);
+						mp_UnderLayer->setType(0x0008);
+						mp_UnderLayer->Send((unsigned char*)&pFrame, ARP_MAX_LENGTH);
 					}
 				}
 			}

@@ -72,7 +72,7 @@ CArpAppDlg::CArpAppDlg(CWnd* pParent /*=NULL*/)
 	m_LayerMgr.AddLayer(new CIPLayer("IP"));
 
 	//////////////////////// fill the blank ///////////////////////////////
-	m_LayerMgr.ConnectLayers("NI ( *Ethernet ( *IP *ARP ( *IP ( *ChatDlg ) ) )");
+	m_LayerMgr.ConnectLayers("NI ( *Ethernet ( *IP ( *ChatDlg ) *ARP ( *IP ( *ChatDlg ) ) )");
 	///////////////////////////////////////////////////////////////////////
 
 	m_IP = (CIPLayer*)mp_UnderLayer;
@@ -327,10 +327,10 @@ BOOL CArpAppDlg::Receive(unsigned char *ppayload)
 
 	SetDstEthernetAddress();
 	m_ETH->SetEnetDstAddress(desaddress);
-	m_ETH->setType(0x0008);
+	m_ARP->SetDestinAddress(desaddress);
+	m_ETH->setType(0x0608);
 	m_NI->PacketStartDriver();
-	// adpter에 따른 ip주소를 내 아이피 주소로 설정함.
-	return TRUE;
+	return mp_UnderLayer->Send(NULL, 0);
 }
 
 BOOL CArpAppDlg::PreTranslateMessage(MSG* pMsg)

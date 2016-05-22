@@ -96,3 +96,7 @@ void CEthernetLayer::SetDestinAddress(unsigned char* pAddress)
 {
 	SetEnetDstAddress(pAddress);
 }
+void CEthernetLayer::SetSourceAddress(unsigned char* pAddress)
+{
+	SetEnetSrcAddress(pAddress);
+}

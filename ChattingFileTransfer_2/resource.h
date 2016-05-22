@@ -8,6 +8,7 @@
 #define IDD_IPC_DIALOG                  102
 #define IDR_MAINFRAME                   128
 #define IDD_PROXYDLG                    132
+#define IDD_DIALOG1                     135
 #define IDC_EDIT_MSG                    1000
 #define IDC_BUTTON_SEND                 1001
 #define IDC_LIST_CHAT                   1003
@@ -40,14 +41,24 @@
 #define IDC_EXPLORER1                   1030
 #define IDC_ITEMDELETE                  1032
 #define IDC_ALLDELETE                   1033
+#define IDC_LIST2                       1034
+#define IDC_IPADDRESS1                  1035
+#define IDC_IPADDRESS2                  1036
+#define IDC_IPADDRESS3                  1037
+#define IDC_COMBO1                      1038
+#define IDC_CHECK1                      1039
+#define IDC_CHECK2                      1040
+#define IDC_BUTTON4                     1040
+#define IDC_CHECK3                      1041
+#define IDC_BUTTON5                     1041
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        135
+#define _APS_NEXT_RESOURCE_VALUE        137
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1033
+#define _APS_NEXT_CONTROL_VALUE         1041
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

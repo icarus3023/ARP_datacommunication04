@@ -71,13 +71,35 @@ BOOL CIPLayer::Receive(unsigned char* ppayload)
 	PIPLayer_HEADER pFrame = (PIPLayer_HEADER) ppayload ;
 	
 	BOOL bSuccess = FALSE ;
-
+	STATIC_CACHE test;
+	test.cache_ipaddr[0] = 192;
+	test.cache_ipaddr[1] = 168;
+	test.cache_ipaddr[2] = 0;
+	test.cache_ipaddr[3] = 0;
+	test.cache_netmaskaddr[0] = 255;
+	test.cache_netmaskaddr[1] = 255;
+	test.cache_netmaskaddr[2] = 255;
+	test.cache_netmaskaddr[3] = 0;
+	test.cache_flag = 0x01;
+	memset(test.cache_gatewayaddr, 0, 4);
+	test.static_interface = 0;
+	static_table.Add(test);
 	for (int i = 0; i < static_table.GetSize(); i++) {
-		if (memcmp((char*)static_table[i].cache_ipaddr, (char*)((short)pFrame->ip_dst & (short)static_table[i].cache_netmaskaddr),4) == 0) { // static router의 네트워크 아이디가 송신측의 목적지주소를 서브넷팅한 네트워크 주소와 같으면
-			if (static_table[i].cache_flag==0) this->SetDstIPAddress(pFrame->ip_dst);			
-			else if (static_table[i].cache_flag == 1) this->SetDstIPAddress(static_table[i].cache_gatewayaddr);	
-			if (mp_aUpperLayer[1]->Receive((unsigned char*)static_table[i].static_interface)) {  // mp_aUpperLayer[1] is CArpAppDlg Layer
-				bSuccess = mp_UnderLayer->Send((unsigned char*)&m_sHeader, IP_HEADER_SIZE);	//UnderLayer is Ethernet Layer
+		unsigned char netId[4];
+		netId[0] = pFrame->ip_dst[0] & static_table[i].cache_netmaskaddr[0];
+		netId[1] = pFrame->ip_dst[1] & static_table[i].cache_netmaskaddr[1];
+		netId[2] = pFrame->ip_dst[2] & static_table[i].cache_netmaskaddr[2];
+		netId[3] = pFrame->ip_dst[3] & static_table[i].cache_netmaskaddr[3];
+		if (memcmp((unsigned char*)static_table[i].cache_ipaddr, (unsigned char*)(netId),4) == 0) { // static router의 네트워크 아이디가 송신측의 목적지주소를 서브넷팅한 네트워크 주소와 같으면
+			pICMPLAYER_HEADER icmp = (pICMPLAYER_HEADER)pFrame->ip_data;
+			if (icmp->icmp_type == 0x08) {
+				mp_UnderLayer->setType(0x0608);// icmp request
+				bSuccess = mp_aUpperLayer[0]->Receive((unsigned char*)static_table[i].static_interface);
+				return bSuccess;
+			}
+			else if (icmp->icmp_type == 0x00){
+				mp_UnderLayer->setType(0x0008); // icmp reply
+				bSuccess = mp_UnderLayer->Send((unsigned char*)pFrame, IP_DATA_SIZE);	//UnderLayer is Ethernet Layer
 				return bSuccess;
 			}
 		}
