@@ -70,7 +70,7 @@ BOOL CIPLayer::Receive(unsigned char* ppayload)
 {
 	PIPLayer_HEADER pFrame = (PIPLayer_HEADER) ppayload ;
 	
-	BOOL bSuccess = FALSE ;
+	BOOL bSuccess = FALSE;
 
 	for (int i = 0; i < static_table.GetSize(); i++) {
 		if (memcmp((char*)static_table[i].cache_ipaddr, (char*)((short)pFrame->ip_dst & (short)static_table[i].cache_netmaskaddr),4) == 0) { // static router의 네트워크 아이디가 송신측의 목적지주소를 서브넷팅한 네트워크 주소와 같으면
@@ -94,3 +94,30 @@ BOOL CIPLayer::Receive(unsigned char* ppayload)
 	//-> subnet한 네트워크 id가 up에 있으면 해당 네트워크id에 arp수행, gateway일때는 다른 router로 이동 다른라우터에 해당 네트워크id에 arp수행, reply가 오면 ping패킷으로 reply를 보냄.
 	return bSuccess ;
 }
+
+BOOL CIPLayer::InsertRouteTable(unsigned char* destAddr, unsigned char* netAddr, unsigned char* gateAddr, int checkFlag, int static_interface)
+{
+	STATIC_CACHE routeTable;
+	routeTable.cache_ipaddr[0] = destAddr[0];
+	routeTable.cache_ipaddr[1] = destAddr[1];
+	routeTable.cache_ipaddr[2] = destAddr[2];
+	routeTable.cache_ipaddr[3] = destAddr[3];
+	
+
+	routeTable.cache_netmaskaddr[0] = netAddr[0];
+	routeTable.cache_netmaskaddr[1] = netAddr[1];
+	routeTable.cache_netmaskaddr[2] = netAddr[2];
+	routeTable.cache_netmaskaddr[3] = netAddr[3];
+
+	routeTable.cache_gatewayaddr[0] = gateAddr[0];
+	routeTable.cache_gatewayaddr[1] = gateAddr[1];
+	routeTable.cache_gatewayaddr[2] = gateAddr[2];
+	routeTable.cache_gatewayaddr[3] = gateAddr[3];
+
+	routeTable.cache_flag = checkFlag;
+	routeTable.static_interface = static_interface;
+
+	static_table.Add(routeTable);
+	return true;
+}
+

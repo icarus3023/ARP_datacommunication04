@@ -152,6 +152,7 @@ public:
 	CListBox proxyTableList;	
 	CComboBox m_ComboEnetName;	
 	CListBox CProxyList;
+	CListCtrl srt_CList;
 
 	afx_msg void OnBnClickedItemdelete();
 	afx_msg void OnBnClickedAlldelete();
@@ -160,6 +161,8 @@ public:
 
 	DWORD CArpAppDlg::ResolveAddr(CString& sIP, int nIndex);
 	CArpLayer* GetArpLayer();
+	CIPLayer* GetIPLayer();
+	CNILayer* GetNILayer();
 	afx_msg void OnClickedProxytabledelete();
 	afx_msg void OnBnClickedGratitudearpsend();
 	
@@ -168,8 +171,9 @@ public:
 	CString CGratitousDevAddr;
 	CEdit CGratitousContol;
 
-	CListCtrl srt_CList;
+	
 	afx_msg void OnBnClickedButton4();
+	afx_msg void OnBnClickedButton5();
 };
 
 //{{AFX_INSERT_LOCATION}}

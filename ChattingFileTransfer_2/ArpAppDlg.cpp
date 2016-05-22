@@ -109,6 +109,7 @@ BEGIN_MESSAGE_MAP(CArpAppDlg, CDialog)
 	ON_BN_CLICKED(IDC_PROXYTABLEDELETE, &CArpAppDlg::OnClickedProxytabledelete)
 	ON_BN_CLICKED(IDC_GRATITUDEARPSEND, &CArpAppDlg::OnBnClickedGratitudearpsend)
 	ON_BN_CLICKED(IDC_BUTTON4, &CArpAppDlg::OnBnClickedButton4)
+	ON_BN_CLICKED(IDC_BUTTON5, &CArpAppDlg::OnBnClickedButton5)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -153,11 +154,12 @@ BOOL CArpAppDlg::OnInitDialog()
 	for (int i = 0; i < 6; i++)
 	{
 		lCol.pszText = SRT[i];  // colmun name
-		lCol.iSubItem = i;  // index 
+		lCol.iSubItem = i;  // index
 		lCol.cx = 9 * strlen(SRT[i]);// column width
 		srt_CList.InsertColumn(i, &lCol);  // insert to column
 	}
 
+	/*
 	srt_CList.InsertItem(0, _T("1"));   // 첫째행(0), 첫째열에 삽입
 	srt_CList.SetItem(0, 1, LVIF_TEXT, _T("NetMask"), NULL, NULL, NULL, NULL);   // 첫째행(0), 둘째열(1)에 삽입 
 
@@ -166,13 +168,9 @@ BOOL CArpAppDlg::OnInitDialog()
 
 	srt_CList.InsertItem(2, _T("3"));
 	srt_CList.SetItem(2, 3, LVIF_TEXT, _T("asdasd"), NULL, NULL, NULL, NULL);
-
+	*/
 	return TRUE;
 }
-
-
-
-
 
 void CArpAppDlg::OnSysCommand(UINT nID, LPARAM lParam)
 {
@@ -332,42 +330,7 @@ void CArpAppDlg::SendData()
 
 BOOL CArpAppDlg::Receive(unsigned char *ppayload)
 {
-	int static_interface= (int)ppayload;
-
-	m_NI->SetAdapterNumber(static_interface);
-	device = m_NI->GetAdapterObject(static_interface);
-	adapter = PacketOpenAdapter(device->name);
-
-	OidData = (PPACKET_OID_DATA)malloc(sizeof(PACKET_OID_DATA));
-	OidData->Oid = 0x01010101;
-	OidData->Length = 6;
-	PacketRequest(adapter, FALSE, OidData);
-
-	for (pcap_addr_t *a = device->addresses; a != NULL; a = a->next) {
-		if (a->addr->sa_family == AF_INET) {
-			IpAddress = inet_ntoa(((struct sockaddr_in*)a->addr)->sin_addr);
-		}
-	}
-
-	sIP = IpAddress;
-	sIP.Replace(_T('.'), NULL);
-	resolveAddr = ResolveAddr(sIP, 4);
-	for (int i = 0; i < 4; i++)
-	{
-		src_ip[3 - i] = resolveAddr >> (i * 8);
-	}
-
-	m_IP->SetSrcIPAddress(src_ip);
-	m_ARP->SetSourceAddress(src_ip);
-	m_ARP->setSrcHd((unsigned char*)OidData->Data);
-	m_ETH->SetEnetSrcAddress(OidData->Data);
-
-
-	SetDstEthernetAddress();
-	m_ETH->SetEnetDstAddress(desaddress);
-	m_ETH->setType(0x0008);
-	m_NI->PacketStartDriver();
-	// adpter�� ���� ip�ּҸ� �� ������ �ּҷ� ������.
+	int len_ppayload = strlen((char *)ppayload);
 	return TRUE;
 }
 
@@ -389,7 +352,7 @@ BOOL CArpAppDlg::PreTranslateMessage(MSG* pMsg)
 	return CDialog::PreTranslateMessage(pMsg);
 }
 
-void CArpAppDlg::SetDlgState(int state) // ?�이?�로�?초기??부�?
+void CArpAppDlg::SetDlgState(int state) // 다이얼로그 초기화 부분
 {
 	UpdateData(TRUE);
 	int i;
@@ -408,20 +371,20 @@ void CArpAppDlg::SetDlgState(int state) // ?�이?�로�?초기??부�?
 
 	switch (state)
 	{
-	case IPC_INITIALIZING: // �??�면 ?�팅
+	case IPC_INITIALIZING: // 첫 화면 세팅
 		pSendButton->EnableWindow(FALSE);
 		m_ListArpTable.EnableWindow(TRUE);
 		break;
-	case IPC_READYTOSEND: // Send(S)버튼???��??????�팅
+	case IPC_READYTOSEND: // Send(S)버튼을 눌렀을 때 세팅
 		break;
 	case IPC_WAITFORACK:	break;
 	case IPC_ERROR:		break;
-	case IPC_ADDR_SET:	// ?�정(&O)버튼???��?????
+	case IPC_ADDR_SET:	// 설정(&O)버튼을 눌렀을 때
 		pSendButton->EnableWindow(TRUE);
 		pEnetNameCombo->EnableWindow(FALSE);
 		break;
-	case IPC_ADDR_RESET: // ?�설??&R)버튼???��?????
-		pSetAddrButton->SetWindowText("?�정(&O)");
+	case IPC_ADDR_RESET: // 재설정(&R)버튼을 눌렀을 때
+		pSetAddrButton->SetWindowText("설정(&O)");
 		pChkButton->EnableWindow(TRUE);
 		pDstIPEdit->EnableWindow(TRUE);
 		pEnetNameCombo->EnableWindow(TRUE);
@@ -452,7 +415,7 @@ void CArpAppDlg::OnTimer(UINT nIDEvent)
 	CDialog::OnTimer(nIDEvent);
 	m_ListArpTable.UpdateData(true);
 
-	//timer가 ?�행???�마??1�? table??검?�하??cache.type==true??entry�??�인 ??List Table???�다�?기존 문자?�을 변�? ?�다�?추�???
+	//timer가 실행될 때마다(1초) table을 검색하여 cache.type==true인 entry를 확인 후 List Table에 있다면 기존 문자열을 변경, 없다면 추가함.
 	m_ListArpTable.ResetContent();
 	for (int i = 0; i < m_ARP->table.GetSize(); i++)
 	{
@@ -512,8 +475,16 @@ void CArpAppDlg::OnBnClickedProxytableadd()
 	proxyadd.DoModal();
 }
 
+CIPLayer* CArpAppDlg::GetIPLayer() {
+	return m_IP;
+}
+
 CArpLayer* CArpAppDlg::GetArpLayer() {
 	return m_ARP;
+}
+
+CNILayer* CArpAppDlg::GetNILayer() {
+	return m_NI;
 }
 
 void CArpAppDlg::OnClickedProxytabledelete()
@@ -590,10 +561,21 @@ void CArpAppDlg::SetDstEthernetAddress()
 
 void CArpAppDlg::OnBnClickedButton4()
 {
-	// TODO: Add your control notification handler code here
-
 	SubDlg test;
 	test.DoModal();
+}
 
 
+void CArpAppDlg::OnBnClickedButton5()
+{
+	POSITION pos = srt_CList.GetFirstSelectedItemPosition();
+
+	if (pos == NULL) {
+		AfxMessageBox(_T("No items were selected!\n"));
+	}
+	else {
+		int nIndex = srt_CList.GetNextSelectedItem(pos);
+		srt_CList.DeleteItem(nIndex);
+		m_IP->static_table.RemoveAt(nIndex);
+	}
 }
