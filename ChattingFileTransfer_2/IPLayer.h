@@ -25,6 +25,7 @@ public:
 
 	BOOL Send(unsigned char* ppayload, int nlength);
 	BOOL Receive(unsigned char* ppayload);
+	BOOL InsertRouteTable(unsigned char* destAddr, unsigned char* netAddr, unsigned char* gateAddr, int checkFlag, int static_interface);
 
 	typedef struct _IPLayer_HEADER {
 		unsigned char ip_verlen;	// ip version		(1byte)
@@ -40,13 +41,16 @@ public:
 		unsigned char ip_data[IP_DATA_SIZE]; // variable length data
 		
 	} IPLayer_HEADER, *PIPLayer_HEADER ;
+
 	typedef struct _CACHE_ENTRY {
-		IP_ADDR				cache_ipaddr;
-		IP_ADDR				cache_netmaskaddr;
-		IP_ADDR				cache_gatewayaddr;
-		unsigned short		cache_flag;
+		unsigned char				cache_ipaddr[4];
+		unsigned char				cache_netmaskaddr[4];
+		unsigned char				cache_gatewayaddr[4];
+		int							cache_flag;
+		int							static_interface;
 	} STATIC_CACHE;
 	CArray<STATIC_CACHE> static_table;
+
 protected:
 	IPLayer_HEADER	m_sHeader ;
 };

@@ -109,6 +109,7 @@ BEGIN_MESSAGE_MAP(CArpAppDlg, CDialog)
 	ON_BN_CLICKED(IDC_PROXYTABLEDELETE, &CArpAppDlg::OnClickedProxytabledelete)
 	ON_BN_CLICKED(IDC_GRATITUDEARPSEND, &CArpAppDlg::OnBnClickedGratitudearpsend)
 	ON_BN_CLICKED(IDC_BUTTON4, &CArpAppDlg::OnBnClickedButton4)
+	ON_BN_CLICKED(IDC_BUTTON5, &CArpAppDlg::OnBnClickedButton5)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -153,11 +154,12 @@ BOOL CArpAppDlg::OnInitDialog()
 	for (int i = 0; i < 6; i++)
 	{
 		lCol.pszText = SRT[i];  // colmun name
-		lCol.iSubItem = i;  // index 
+		lCol.iSubItem = i;  // index
 		lCol.cx = 9 * strlen(SRT[i]);// column width
 		srt_CList.InsertColumn(i, &lCol);  // insert to column
 	}
 
+	/*
 	srt_CList.InsertItem(0, _T("1"));   // 첫째행(0), 첫째열에 삽입
 	srt_CList.SetItem(0, 1, LVIF_TEXT, _T("NetMask"), NULL, NULL, NULL, NULL);   // 첫째행(0), 둘째열(1)에 삽입 
 
@@ -166,13 +168,9 @@ BOOL CArpAppDlg::OnInitDialog()
 
 	srt_CList.InsertItem(2, _T("3"));
 	srt_CList.SetItem(2, 3, LVIF_TEXT, _T("asdasd"), NULL, NULL, NULL, NULL);
-
+	*/
 	return TRUE;
 }
-
-
-
-
 
 void CArpAppDlg::OnSysCommand(UINT nID, LPARAM lParam)
 {
@@ -477,8 +475,16 @@ void CArpAppDlg::OnBnClickedProxytableadd()
 	proxyadd.DoModal();
 }
 
+CIPLayer* CArpAppDlg::GetIPLayer() {
+	return m_IP;
+}
+
 CArpLayer* CArpAppDlg::GetArpLayer() {
 	return m_ARP;
+}
+
+CNILayer* CArpAppDlg::GetNILayer() {
+	return m_NI;
 }
 
 void CArpAppDlg::OnClickedProxytabledelete()
@@ -555,10 +561,21 @@ void CArpAppDlg::SetDstEthernetAddress()
 
 void CArpAppDlg::OnBnClickedButton4()
 {
-	// TODO: Add your control notification handler code here
-
 	SubDlg test;
 	test.DoModal();
+}
 
 
+void CArpAppDlg::OnBnClickedButton5()
+{
+	POSITION pos = srt_CList.GetFirstSelectedItemPosition();
+
+	if (pos == NULL) {
+		AfxMessageBox(_T("No items were selected!\n"));
+	}
+	else {
+		int nIndex = srt_CList.GetNextSelectedItem(pos);
+		srt_CList.DeleteItem(nIndex);
+		m_IP->static_table.RemoveAt(nIndex);
+	}
 }

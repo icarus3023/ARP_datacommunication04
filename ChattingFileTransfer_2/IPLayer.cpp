@@ -5,7 +5,7 @@
 #include "stdafx.h"
 #include "arp.h"
 #include "IPLayer.h"
-
+#include "NILayer.h"
 #ifdef _DEBUG
 #undef THIS_FILE
 static char THIS_FILE[]=__FILE__;
@@ -70,13 +70,54 @@ BOOL CIPLayer::Receive(unsigned char* ppayload)
 {
 	PIPLayer_HEADER pFrame = (PIPLayer_HEADER) ppayload ;
 	
-	BOOL bSuccess = FALSE ;
+	BOOL bSuccess = FALSE;
 
+	for (int i = 0; i < static_table.GetSize(); i++) {
+		if (memcmp((char*)static_table[i].cache_ipaddr, (char*)((short)pFrame->ip_dst & (short)static_table[i].cache_netmaskaddr),4) == 0) { // static router의 네트워크 아이디가 송신측의 목적지주소를 서브넷팅한 네트워크 주소와 같으면
+			if (static_table[i].cache_flag==0) this->SetDstIPAddress(pFrame->ip_dst);			
+			else if (static_table[i].cache_flag == 1) this->SetDstIPAddress(static_table[i].cache_gatewayaddr);	
+			if (mp_aUpperLayer[1]->Receive((unsigned char*)static_table[i].static_interface)) {  // mp_aUpperLayer[1] is CArpAppDlg Layer
+				bSuccess = mp_UnderLayer->Send((unsigned char*)&m_sHeader, IP_HEADER_SIZE);	//UnderLayer is Ethernet Layer
+				return bSuccess;
+			}
+		}
+	}
 	if(memcmp((char *)pFrame->ip_dst,(char *)m_sHeader.ip_src,4) ==0 &&
 		memcmp((char *)pFrame->ip_src,(char *)m_sHeader.ip_src,4) !=0 && 
 		memcmp((char *)pFrame->ip_src,(char *)m_sHeader.ip_dst,4) ==0 )
 	{
 		bSuccess = mp_aUpperLayer[0]->Receive((unsigned char*)pFrame->ip_data);
 	}
+	
+	
+	//들어오는패킷이 라우터 테이블에 있는지 검사. -> 해당 패킷이 gateway에있는지 up에있는지 (flag)를 통해 검사.
+	//-> subnet한 네트워크 id가 up에 있으면 해당 네트워크id에 arp수행, gateway일때는 다른 router로 이동 다른라우터에 해당 네트워크id에 arp수행, reply가 오면 ping패킷으로 reply를 보냄.
 	return bSuccess ;
 }
+
+BOOL CIPLayer::InsertRouteTable(unsigned char* destAddr, unsigned char* netAddr, unsigned char* gateAddr, int checkFlag, int static_interface)
+{
+	STATIC_CACHE routeTable;
+	routeTable.cache_ipaddr[0] = destAddr[0];
+	routeTable.cache_ipaddr[1] = destAddr[1];
+	routeTable.cache_ipaddr[2] = destAddr[2];
+	routeTable.cache_ipaddr[3] = destAddr[3];
+	
+
+	routeTable.cache_netmaskaddr[0] = netAddr[0];
+	routeTable.cache_netmaskaddr[1] = netAddr[1];
+	routeTable.cache_netmaskaddr[2] = netAddr[2];
+	routeTable.cache_netmaskaddr[3] = netAddr[3];
+
+	routeTable.cache_gatewayaddr[0] = gateAddr[0];
+	routeTable.cache_gatewayaddr[1] = gateAddr[1];
+	routeTable.cache_gatewayaddr[2] = gateAddr[2];
+	routeTable.cache_gatewayaddr[3] = gateAddr[3];
+
+	routeTable.cache_flag = checkFlag;
+	routeTable.static_interface = static_interface;
+
+	static_table.Add(routeTable);
+	return true;
+}
+

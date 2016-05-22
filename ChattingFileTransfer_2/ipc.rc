@@ -13,7 +13,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Korean (Korea) resources
+// 한국어(대한민국) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_KOR)
 LANGUAGE LANG_KOREAN, SUBLANG_DEFAULT
@@ -65,7 +65,6 @@ END
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDR_MAINFRAME           ICON                    "res\\apple.ico"
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -127,13 +126,13 @@ BEGIN
     CONTROL         "",IDC_EXPLORER1,"{8856F961-340A-11D0-A96B-00C04FD705A2}",WS_TABSTOP,0,0,170,120
 END
 
-IDD_DIALOG1 DIALOGEX 0, 0, 314, 198
+IDD_DIALOG1 DIALOGEX 0, 0, 315, 149
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,199,177,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,257,177,50,14
+    DEFPUSHBUTTON   "OK",IDOK,199,128,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,258,128,50,14
     LTEXT           "Destination",IDC_STATIC,15,19,72,8
     LTEXT           "NetMask",IDC_STATIC,15,40,72,8
     LTEXT           "Interface",IDC_STATIC,15,106,72,17
@@ -142,10 +141,10 @@ BEGIN
     CONTROL         "",IDC_IPADDRESS1,"SysIPAddress32",WS_TABSTOP,89,21,116,14
     CONTROL         "",IDC_IPADDRESS2,"SysIPAddress32",WS_TABSTOP,89,41,116,14
     CONTROL         "",IDC_IPADDRESS3,"SysIPAddress32",WS_TABSTOP,90,61,116,14
-    COMBOBOX        IDC_COMBO1,91,105,111,30,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Up",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,93,82,25,10
     CONTROL         "Gateway",IDC_CHECK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,123,82,44,10
     CONTROL         "Host",IDC_CHECK3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,171,81,30,10
+    COMBOBOX        IDC_COMBO1,88,105,181,68,CBS_DROPDOWNLIST | CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
 END
 
 
@@ -224,9 +223,9 @@ BEGIN
     IDD_DIALOG1, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 307
+        RIGHTMARGIN, 308
         TOPMARGIN, 7
-        BOTTOMMARGIN, 191
+        BOTTOMMARGIN, 142
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -284,7 +283,7 @@ BEGIN
     IDS_ABOUTBOX            "cft 정보(&A)..."
 END
 
-#endif    // Korean (Korea) resources
+#endif    // 한국어(대한민국) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
