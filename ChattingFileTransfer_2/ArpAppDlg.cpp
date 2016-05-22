@@ -86,12 +86,12 @@ void CArpAppDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_LIST_CHAT, m_ListArpTable);
-	DDX_Control(pDX, IDC_EDIT_DSTIP, m_unDstIPAddr);
-	DDX_Control(pDX, IDC_COMBO_ENETADDR, m_ComboEnetName);
+	//  DDX_Control(pDX, IDC_EDIT_DSTIP, m_unDstIPAddr);
+	//  DDX_Control(pDX, IDC_COMBO_ENETADDR, m_ComboEnetName);
 	DDX_Control(pDX, IDC_LIST1, CProxyList);
-	DDX_Text(pDX, IDC_GRATITUDEARPEDIT, CGratitousDevAddr);
-	DDV_MaxChars(pDX, CGratitousDevAddr, 12);
-	DDX_Control(pDX, IDC_GRATITUDEARPEDIT, CGratitousContol);
+//	DDX_Text(pDX, IDC_GRATITUDEARPEDIT, CGratitousDevAddr);
+	//DDV_MaxChars(pDX, CGratitousDevAddr, 12);
+	//  DDX_Control(pDX, IDC_GRATITUDEARPEDIT, CGratitousContol);
 	DDX_Control(pDX, IDC_LIST2, srt_CList);
 }
 
@@ -235,9 +235,10 @@ void CArpAppDlg::OnButtonAddrSet()
 	UpdateData(TRUE);
 
 	if (m_bSendReady) {
-		SetDlgState(IPC_ADDR_RESET);
+		//SetDlgState(IPC_ADDR_RESET);
 		SetDlgState(IPC_INITIALIZING);
 	}
+	/*
 	else {
 		device = m_NI->GetAdapterObject(m_ComboEnetName.GetCurSel());
 		adapter = PacketOpenAdapter(device->name);
@@ -269,10 +270,13 @@ void CArpAppDlg::OnButtonAddrSet()
 
 		m_NI->PacketStartDriver();
 
-		SetDlgState(IPC_ADDR_SET);
-		SetDlgState(IPC_READYTOSEND);
+		
 	}
-	m_bSendReady = !m_bSendReady;
+	*/
+	m_NI->PacketStartDriver();
+	SetDlgState(IPC_ADDR_SET);
+	//SetDlgState(IPC_READYTOSEND);
+	//m_bSendReady = !m_bSendReady;
 	SetTimer(1, 1000, NULL);
 }
 
@@ -297,16 +301,19 @@ void CArpAppDlg::SetRegstryMessage()
 void CArpAppDlg::OnSendMessage()
 {
 	UpdateData(TRUE);
-
+	/*
 	if (!m_unDstIPAddr.IsBlank())
 	{
 		SendData();
 		(CEdit*)GetDlgItem(IDC_EDIT_DSTIP)->SetFocus();
 	}
+	*/
 	UpdateData(FALSE);
 }
+
 void CArpAppDlg::SendData()
 {
+	/*
 	m_unDstIPAddr.GetAddress(dst_ip[0], dst_ip[1], dst_ip[2], dst_ip[3]);
 	m_IP->SetDstIPAddress(dst_ip);
 	m_ARP->SetDestinAddress(dst_ip);
@@ -325,7 +332,9 @@ void CArpAppDlg::SendData()
 	}
 
 	mp_UnderLayer->Send(NULL, 0);
+	*/
 }
+
 void CArpAppDlg::setType(int interfaceNum)
 {
 	this->interfaceNum = interfaceNum;
@@ -376,7 +385,7 @@ void CArpAppDlg::SetDlgState(int state) // 다이얼로그 초기화 부분
 	CString device_description;
 
 	CButton*	pChkButton = (CButton*)GetDlgItem(IDC_CHECK_TOALL);
-	CButton*	pSendButton = (CButton*)GetDlgItem(IDC_BUTTON_SEND);
+	//CButton*	pSendButton = (CButton*)GetDlgItem(IDC_BUTTON_SEND);
 	CButton*	pSetAddrButton = (CButton*)GetDlgItem(IDC_BUTTON_ADDR);
 	CButton*	pFileSearchButton = (CButton*)GetDlgItem(IDC_BUTTON_FILE);
 	CButton*	pFileSendButton = (CButton*)GetDlgItem(IDC_BUTTON_FILESEND);
@@ -384,12 +393,12 @@ void CArpAppDlg::SetDlgState(int state) // 다이얼로그 초기화 부분
 	CEdit*		pDstIPEdit = (CEdit*)GetDlgItem(IDC_EDIT_DSTIP);
 	CEdit*		pFilePathEdit = (CEdit*)GetDlgItem(IDC_EDIT_FilePath);
 
-	CComboBox*	pEnetNameCombo = (CComboBox*)GetDlgItem(IDC_COMBO_ENETADDR);
+	//CComboBox*	pEnetNameCombo = (CComboBox*)GetDlgItem(IDC_COMBO_ENETADDR);
 
 	switch (state)
 	{
 	case IPC_INITIALIZING: // 첫 화면 세팅
-		pSendButton->EnableWindow(FALSE);
+//		pSendButton->EnableWindow(FALSE);
 		m_ListArpTable.EnableWindow(TRUE);
 		break;
 	case IPC_READYTOSEND: // Send(S)버튼을 눌렀을 때 세팅
@@ -397,9 +406,13 @@ void CArpAppDlg::SetDlgState(int state) // 다이얼로그 초기화 부분
 	case IPC_WAITFORACK:	break;
 	case IPC_ERROR:		break;
 	case IPC_ADDR_SET:	// 설정(&O)버튼을 눌렀을 때
-		pSendButton->EnableWindow(TRUE);
-		pEnetNameCombo->EnableWindow(FALSE);
+	//	pSendButton->EnableWindow(TRUE);
+	//	pEnetNameCombo->EnableWindow(FALSE);
+		pSetAddrButton->EnableWindow(FALSE);
 		break;
+
+
+	/*
 	case IPC_ADDR_RESET: // 재설정(&R)버튼을 눌렀을 때
 		pSetAddrButton->SetWindowText("설정(&O)");
 		pChkButton->EnableWindow(TRUE);
@@ -416,7 +429,9 @@ void CArpAppDlg::SetDlgState(int state) // 다이얼로그 초기화 부분
 			pEnetNameCombo->AddString(device_description);
 			pEnetNameCombo->SetCurSel(0);
 		}
+		
 		break;
+		*/
 	}
 
 	UpdateData(FALSE);
@@ -514,7 +529,7 @@ void CArpAppDlg::OnClickedProxytabledelete()
 void CArpAppDlg::OnBnClickedGratitudearpsend()
 {
 	//CGratitudeDeviceAddress
-
+	/*
 	device = m_NI->GetAdapterObject(m_ComboEnetName.GetCurSel());
 	adapter = PacketOpenAdapter(device->name);
 	a = device->addresses;
@@ -552,6 +567,7 @@ void CArpAppDlg::OnBnClickedGratitudearpsend()
 	m_ARP->setSrcHd(graOidData);
 	m_ETH->SetEnetSrcAddress(graOidData);
 	mp_UnderLayer->Send(NULL, 0);
+	*/
 }
 
 
