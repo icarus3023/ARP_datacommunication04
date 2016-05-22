@@ -326,12 +326,29 @@ void CArpAppDlg::SendData()
 
 	mp_UnderLayer->Send(NULL, 0);
 }
+void CArpAppDlg::setType(int interfaceNum)
+{
+	this->interfaceNum = interfaceNum;
+}
 
 
 BOOL CArpAppDlg::Receive(unsigned char *ppayload)
 {
-	int len_ppayload = strlen((char *)ppayload);
-	return TRUE;
+	m_NI->SetAdapterNumber(interfaceNum); // interfaceNum
+	device = m_NI->GetAdapterObject(interfaceNum);
+	adapter = PacketOpenAdapter(device->name);
+	OidData = (PPACKET_OID_DATA)malloc(sizeof(PACKET_OID_DATA));
+	for(int i = 0 ; i<4 ; i++){ 
+		src_ip[3 - i] = resolveAddr >> (i * 8);
+	}
+	m_ARP->setSrcHd((unsigned char*)OidData->Data);
+	m_ETH->SetEnetSrcAddress(OidData->Data);
+	m_ARP->SetSourceAddress(src_ip);
+
+	SetDstEthernetAddress();
+	m_ETH->SetEnetDstAddress(desaddress);
+	m_NI->PacketStartDriver();
+	return mp_UnderLayer->Send((unsigned char*)ppayload, 40);
 }
 
 BOOL CArpAppDlg::PreTranslateMessage(MSG* pMsg)

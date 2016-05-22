@@ -37,8 +37,8 @@ public:
 	CListBox		m_ListArpTable;		// Arp Table View
 	CIPAddressCtrl	m_unDstIPAddr;	// Destination IP Address
 	
-
-	
+	int		interfaceNum;
+	void	setType(int interfaceNum);
 	//}}AFX_DATA
 
 	// 파일 send 버튼 Control

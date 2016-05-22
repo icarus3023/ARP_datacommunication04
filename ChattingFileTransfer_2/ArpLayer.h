@@ -68,7 +68,7 @@ public:
 											//unsigned char	src_ip_addr[4];			// src ip 주소 long???
 											//unsigned char	dest_ether_addr[6];		// dest ethernet 주소(보낼때는 모름)
 											//unsigned char	dest_ip_addr[4];		// dest ip 주소(사용자가 입력한 주소 사용)
-		unsigned char* arp_data;
+		unsigned char	arp_data[ETHER_MAX_SIZE - (IP_DATA_SIZE + IP_HEADER_SIZE + ETHER_HEADER_SIZE)];
 
 	} ARP_HEADER, *PARP_HEADER;
 
@@ -102,7 +102,7 @@ public:
 	bool isProxyTableEntryAndPacketRequest(const PARP_HEADER pFrame, int i);
 	bool isProxyTableNotEmptyAndNotGarp(const PARP_HEADER pFrame);
 	bool isReceivePacketMine(const PARP_HEADER pFrame);
-	void SendUnderLayerOp(PARP_HEADER pFrame, unsigned short op, int nlength);
+	bool SendUnderLayerOp(PARP_HEADER pFrame, unsigned short op, int nlength);
 protected:
 	ARP_HEADER m_sHeader;
 };

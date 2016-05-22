@@ -28,7 +28,7 @@ public:
 	BOOL InsertRouteTable(unsigned char* destAddr, unsigned char* netAddr, unsigned char* gateAddr, int checkFlag, int static_interface);
 
 	typedef struct _IPLayer_HEADER {
-		unsigned char ip_verlen;	// ip version		(1byte)
+		unsigned short  ip_verlen;	// ip version		(1byte)
 		unsigned char ip_tos;		// type of service	(1byte)
 		unsigned short ip_len;		// total packet length	(2byte)
 		unsigned short ip_id;		// datagram id			(2byte)

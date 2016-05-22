@@ -62,7 +62,9 @@ BOOL CIPLayer::Send(unsigned char* ppayload, int nlength)
 	
 	BOOL bSuccess = FALSE ;
 	bSuccess = mp_UnderLayer->Send((unsigned char*)&m_sHeader,nlength+IP_HEADER_SIZE);
-
+	mp_UnderLayer->SetSourceAddress(m_sHeader.ip_src);
+	mp_UnderLayer->SetDestinAddress(m_sHeader.ip_dst);
+	bSuccess = mp_UnderLayer->Send((unsigned char*)&m_sHeader, nlength + IP_HEADER_SIZE);
 	return bSuccess;
 }
 
@@ -73,11 +75,24 @@ BOOL CIPLayer::Receive(unsigned char* ppayload)
 	BOOL bSuccess = FALSE;
 
 	for (int i = 0; i < static_table.GetSize(); i++) {
-		if (memcmp((char*)static_table[i].cache_ipaddr, (char*)((short)pFrame->ip_dst & (short)static_table[i].cache_netmaskaddr),4) == 0) { // static router의 네트워크 아이디가 송신측의 목적지주소를 서브넷팅한 네트워크 주소와 같으면
-			if (static_table[i].cache_flag==0) this->SetDstIPAddress(pFrame->ip_dst);			
-			else if (static_table[i].cache_flag == 1) this->SetDstIPAddress(static_table[i].cache_gatewayaddr);	
+		unsigned char netIp[4];
+		netIp[0] = pFrame->ip_dst[0] & static_table[i].cache_netmaskaddr[0];
+		netIp[1] = pFrame->ip_dst[1] & static_table[i].cache_netmaskaddr[1];
+		netIp[2] = pFrame->ip_dst[2] & static_table[i].cache_netmaskaddr[2];
+		netIp[3] = pFrame->ip_dst[3] & static_table[i].cache_netmaskaddr[3];
+
+		if (memcmp((unsigned char*)static_table[i].cache_ipaddr, (unsigned char*)(netIp),4) == 0) { // static router의 네트워크 아이디가 송신측의 목적지주소를 서브넷팅한 네트워크 주소와 같으면
+
 			if (mp_aUpperLayer[1]->Receive((unsigned char*)static_table[i].static_interface)) {  // mp_aUpperLayer[1] is CArpAppDlg Layer
-				bSuccess = mp_UnderLayer->Send((unsigned char*)&m_sHeader, IP_HEADER_SIZE);	//UnderLayer is Ethernet Layer
+				SetDstIPAddress(pFrame->ip_dst);
+				SetSrcIPAddress(pFrame->ip_src);
+				m_sHeader.ip_proto = 0x01;
+				m_sHeader.ip_cksum = pFrame->ip_cksum;
+				m_sHeader.ip_id = pFrame->ip_id;
+				m_sHeader.ip_len = pFrame->ip_len;
+				m_sHeader.ip_verlen = 0x45;
+				mp_aUpperLayer[0]->setType(static_table[i].static_interface);
+				bSuccess = mp_aUpperLayer[0]->Receive((unsigned char*)&pFrame->ip_data);
 				return bSuccess;
 			}
 		}

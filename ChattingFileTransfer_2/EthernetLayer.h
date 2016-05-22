@@ -23,6 +23,8 @@ public:
 
 	BOOL			Receive( unsigned char* ppayload ) ;
 	void SetDestinAddress(unsigned char * pAddress);
+	void SetSourceAddress(unsigned char * pAddress);
+	void setType(unsigned short type);
 	BOOL			Send( unsigned char* ppayload, int nlength );
 
 	void			SetEnetDstAddress( unsigned char* pAddress );
