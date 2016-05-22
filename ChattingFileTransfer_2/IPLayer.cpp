@@ -109,7 +109,7 @@ ROUTE_TABLE_ITEM* CIPLayer::getEntry(int &index) {
 	return &entry[index];
 }
 
-
+//..
 // 라우터 테이블의 아이템 정렬(=내림차순)
 void CIPLayer::RouterTablesort() {
 	int i;
@@ -120,8 +120,8 @@ void CIPLayer::RouterTablesort() {
 		flag = false;
 		for (i = 0; i < entrycount - 1; i++) {
 			unsigned long net1, net2;
-			memcpy(&net1, entry[i].netmask.s_ip_addr, 4);
-			memcpy(&net2, entry[i + 1].netmask.s_ip_addr, 4);
+			memcpy(&net1, entry[i].netmask.S_un.s_ip_addr, 4);
+			memcpy(&net2, entry[i + 1].netmask.S_un.s_ip_addr, 4);
 			// 내림차순 정렬
 			if (net1 < net2)
 			{
