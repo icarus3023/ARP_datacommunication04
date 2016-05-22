@@ -2,6 +2,7 @@
 //
 //////////////////////////////////////////////////////////////////////
 
+#include <WinSock2.h>
 #include "stdafx.h"
 #include "arp.h"
 #include "IPLayer.h"
@@ -19,6 +20,7 @@ static char THIS_FILE[]=__FILE__;
 CIPLayer::CIPLayer( char* pName )
 : CBaseLayer( pName )
 {
+	entrycount = 0;
 	ResetHeader( );
 }
 
@@ -120,4 +122,55 @@ BOOL CIPLayer::Receive(unsigned char* ppayload)
 	//들어오는패킷이 라우터 테이블에 있는지 검사. -> 해당 패킷이 gateway에있는지 up에있는지 (flag)를 통해 검사.
 	//-> subnet한 네트워크 id가 up에 있으면 해당 네트워크id에 arp수행, gateway일때는 다른 router로 이동 다른라우터에 해당 네트워크id에 arp수행, reply가 오면 ping패킷으로 reply를 보냄.
 	return bSuccess ;
+}
+
+// 라우터 테이블 아이템 추가
+void CIPLayer::addEntry(ROUTE_TABLE_ITEM &item) {
+	entry[entrycount++] = item;
+	RouterTablesort();
+}
+
+
+// 라우터 테이블 아이템 번호 반환
+int CIPLayer::getEntryCount() {
+	return entrycount;
+}
+
+// 아이템 삭제
+void CIPLayer::delEntry(int &index) {
+	int i;
+	for (i = index; i < entrycount; i++) {
+		entry[i] = entry[i + 1];
+	}
+	entrycount--;
+}
+
+// 아이템 주소값 반환
+ROUTE_TABLE_ITEM* CIPLayer::getEntry(int &index) {
+	return &entry[index];
+}
+
+//..
+// 라우터 테이블의 아이템 정렬(=내림차순)
+void CIPLayer::RouterTablesort() {
+	int i;
+	bool flag = true;
+	ROUTE_TABLE_ITEM temp;
+
+	while (flag) {
+		flag = false;
+		for (i = 0; i < entrycount - 1; i++) {
+			unsigned long net1, net2;
+			memcpy(&net1, entry[i].netmask.S_un.s_ip_addr, 4);
+			memcpy(&net2, entry[i + 1].netmask.S_un.s_ip_addr, 4);
+			// 내림차순 정렬
+			if (net1 < net2)
+			{
+				temp = entry[i];
+				entry[i] = entry[i + 1];
+				entry[i + 1] = temp;
+				flag = true;
+			}
+		}
+	}
 }
