@@ -41,10 +41,11 @@ public:
 		
 	} IPLayer_HEADER, *PIPLayer_HEADER ;
 	typedef struct _CACHE_ENTRY {
-		IP_ADDR				cache_ipaddr;
-		IP_ADDR				cache_netmaskaddr;
-		IP_ADDR				cache_gatewayaddr;
-		unsigned short		cache_flag;
+		unsigned char				cache_ipaddr[4];
+		unsigned char				cache_netmaskaddr[4];
+		unsigned char				cache_gatewayaddr[4];
+		unsigned short				cache_flag;
+		int							static_interface;
 	} STATIC_CACHE;
 	CArray<STATIC_CACHE> static_table;
 protected:
