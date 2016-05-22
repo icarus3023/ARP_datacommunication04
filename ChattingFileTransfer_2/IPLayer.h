@@ -32,16 +32,6 @@ typedef struct ROUTE_TABLE_ITEM {
 }ROUTE_TABLE_ITEM;
 
 
-typedef struct _IP_ADDR
-{
-	union {
-		struct { UCHAR s_b1, s_b2, s_b3, s_b4; } S_un_b;
-		struct { unsigned short s_w1, s_w2; } S_un_w;
-		unsigned long S_addr;
-		UCHAR s_ip_addr[4];
-	}S_un;
-
-} IP_ADDR, *LPIP_ADDR;
 
 class CIPLayer 
 : public CBaseLayer  
