@@ -30,7 +30,7 @@ public:
 	void			SetEnetSrcAddress( unsigned char* pAddress );
 	unsigned char*	GetEnetDstAddress( );
 	unsigned char*	GetEnetSrcAddress( );
-
+	void			setType(unsigned short type);
 	CEthernetLayer( char* pName );
 	virtual ~CEthernetLayer();
 

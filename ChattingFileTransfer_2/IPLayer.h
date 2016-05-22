@@ -27,7 +27,7 @@ public:
 	BOOL Receive(unsigned char* ppayload);
 
 	typedef struct _IPLayer_HEADER {
-		unsigned char ip_verlen;	// ip version		(1byte)
+		unsigned short ip_verlen;	// ip version		(1byte)
 		unsigned char ip_tos;		// type of service	(1byte)
 		unsigned short ip_len;		// total packet length	(2byte)
 		unsigned short ip_id;		// datagram id			(2byte)
@@ -54,7 +54,7 @@ public:
 		unsigned short icmp_chksum;		// total packet length	(2byte)
 		unsigned short icmp_id;		// datagram id			(2byte)
 		unsigned short icmp_seqnum;	// fragment offset		(2byte)
-		unsigned char ip_data[IP_DATA_SIZE]; // variable length data
+		unsigned char ip_data[32]; // variable length data
 
 	} ICMPLAYER_HEADER, *pICMPLAYER_HEADER;
 	bool InsertStaticTable(unsigned char *cache_ipaddr, unsigned char *cache_netmaskaddr, unsigned char *cache_gatewayaddr, unsigned short cache_flag, int static_interface);

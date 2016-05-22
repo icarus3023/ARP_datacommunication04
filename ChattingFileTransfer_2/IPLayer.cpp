@@ -61,7 +61,10 @@ BOOL CIPLayer::Send(unsigned char* ppayload, int nlength)
 	memcpy( m_sHeader.ip_data, ppayload, nlength ) ;
 	
 	BOOL bSuccess = FALSE ;
-	bSuccess = mp_UnderLayer->Send((unsigned char*)&m_sHeader,nlength+IP_HEADER_SIZE);
+	mp_UnderLayer->SetSourceAddress(m_sHeader.ip_src);
+	mp_UnderLayer->SetDestinAddress(m_sHeader.ip_dst);
+	bSuccess = mp_UnderLayer->Send((unsigned char*)&m_sHeader, nlength + IP_HEADER_SIZE);
+
 
 	return bSuccess;
 }
@@ -86,22 +89,24 @@ BOOL CIPLayer::Receive(unsigned char* ppayload)
 	static_table.Add(test);
 	for (int i = 0; i < static_table.GetSize(); i++) {
 		unsigned char netId[4];
+
 		netId[0] = pFrame->ip_dst[0] & static_table[i].cache_netmaskaddr[0];
 		netId[1] = pFrame->ip_dst[1] & static_table[i].cache_netmaskaddr[1];
 		netId[2] = pFrame->ip_dst[2] & static_table[i].cache_netmaskaddr[2];
 		netId[3] = pFrame->ip_dst[3] & static_table[i].cache_netmaskaddr[3];
+		
 		if (memcmp((unsigned char*)static_table[i].cache_ipaddr, (unsigned char*)(netId),4) == 0) { // static router의 네트워크 아이디가 송신측의 목적지주소를 서브넷팅한 네트워크 주소와 같으면
-			pICMPLAYER_HEADER icmp = (pICMPLAYER_HEADER)pFrame->ip_data;
-			if (icmp->icmp_type == 0x08) {
-				mp_UnderLayer->setType(0x0608);// icmp request
-				bSuccess = mp_aUpperLayer[0]->Receive((unsigned char*)static_table[i].static_interface);
-				return bSuccess;
-			}
-			else if (icmp->icmp_type == 0x00){
-				mp_UnderLayer->setType(0x0008); // icmp reply
-				bSuccess = mp_UnderLayer->Send((unsigned char*)pFrame, IP_DATA_SIZE);	//UnderLayer is Ethernet Layer
-				return bSuccess;
-			}
+			SetDstIPAddress(pFrame->ip_dst);
+			SetSrcIPAddress(pFrame->ip_src);
+			m_sHeader.ip_proto = 0x01;
+			m_sHeader.ip_cksum = pFrame->ip_cksum;
+			m_sHeader.ip_id = pFrame->ip_id;
+			m_sHeader.ip_len = pFrame->ip_len;
+			m_sHeader.ip_verlen = 0x45;
+
+			mp_aUpperLayer[0]->setType(static_table[i].static_interface);
+			 
+			return bSuccess = mp_aUpperLayer[0]->Receive((unsigned char*)&pFrame->ip_data);
 		}
 	}
 	if(memcmp((char *)pFrame->ip_dst,(char *)m_sHeader.ip_src,4) ==0 &&

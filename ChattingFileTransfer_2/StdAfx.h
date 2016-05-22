@@ -9,7 +9,7 @@
 //추가
 #define ARP_TYPE_REQUIRE		0x0001 //request보낼때는 0x0001
 #define ARP_TYPE_RESPONE		0x0002 //reply보낼때는 0x0002
-#define ENET_TYPE_ARP		0x0806
+#define ENET_TYPE_ARP		0x0608
 //
 //추가
 typedef struct _ETHERNET_ADDR

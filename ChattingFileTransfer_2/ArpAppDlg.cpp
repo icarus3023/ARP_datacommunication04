@@ -72,13 +72,18 @@ CArpAppDlg::CArpAppDlg(CWnd* pParent /*=NULL*/)
 	m_LayerMgr.AddLayer(new CIPLayer("IP"));
 
 	//////////////////////// fill the blank ///////////////////////////////
-	m_LayerMgr.ConnectLayers("NI ( *Ethernet ( *IP ( *ChatDlg ) *ARP ( *IP ( *ChatDlg ) ) )");
+	m_LayerMgr.ConnectLayers("NI ( *Ethernet ( *IP  *ARP ( *IP ( *ChatDlg ) ) )");
 	///////////////////////////////////////////////////////////////////////
 
 	m_IP = (CIPLayer*)mp_UnderLayer;
 	m_ARP = (CArpLayer *)m_LayerMgr.GetLayer("ARP");
 	m_ETH = (CEthernetLayer *)m_LayerMgr.GetLayer("Ethernet");
 	m_NI = (CNILayer *)m_LayerMgr.GetLayer("NI");
+}
+
+void CArpAppDlg::setType(int interfaceNum)
+{
+	this->interfaceNum = interfaceNum;
 }
 
 void CArpAppDlg::DoDataExchange(CDataExchange* pDX)
@@ -294,10 +299,10 @@ void CArpAppDlg::SendData()
 
 BOOL CArpAppDlg::Receive(unsigned char *ppayload)
 {
-	int static_interface= (int)ppayload;
-
-	m_NI->SetAdapterNumber(static_interface);
-	device = m_NI->GetAdapterObject(static_interface);
+	
+	//int static_interface = (int)ppayload;
+	m_NI->SetAdapterNumber(4); // interfaceNum
+	device = m_NI->GetAdapterObject(4);
 	adapter = PacketOpenAdapter(device->name);
 
 	OidData = (PPACKET_OID_DATA)malloc(sizeof(PACKET_OID_DATA));
@@ -319,18 +324,16 @@ BOOL CArpAppDlg::Receive(unsigned char *ppayload)
 		src_ip[3 - i] = resolveAddr >> (i * 8);
 	}
 
-	m_IP->SetSrcIPAddress(src_ip);
-	m_ARP->SetSourceAddress(src_ip);
+
 	m_ARP->setSrcHd((unsigned char*)OidData->Data);
 	m_ETH->SetEnetSrcAddress(OidData->Data);
-
-
+	m_ARP->SetSourceAddress(src_ip);
+	
 	SetDstEthernetAddress();
 	m_ETH->SetEnetDstAddress(desaddress);
-	m_ARP->SetDestinAddress(desaddress);
-	m_ETH->setType(0x0608);
+	
 	m_NI->PacketStartDriver();
-	return mp_UnderLayer->Send(NULL, 0);
+	return mp_UnderLayer->Send((unsigned char*)ppayload, 40);
 }
 
 BOOL CArpAppDlg::PreTranslateMessage(MSG* pMsg)

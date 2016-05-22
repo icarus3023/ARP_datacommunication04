@@ -67,7 +67,7 @@ BOOL CArpLayer::Receive(unsigned char* ppayload)
 			{
 				for (int i = 0; i < table.GetSize(); i++)
 				{
-					if (!memcmp(&pFrame->arp_src_ipaddr, &table.GetAt(i).cache_ipaddr, 4))
+					if (memcmp(&pFrame->arp_src_ipaddr, &table.GetAt(i).cache_ipaddr, 4)==0)
 					{
 						memcpy(table.GetAt(i).cache_enetaddr.e_addr, pFrame->arp_src_macaddr.e_addr, 6);
 						table.GetAt(i).cache_type = true;
@@ -76,7 +76,8 @@ BOOL CArpLayer::Receive(unsigned char* ppayload)
 						mp_UnderLayer->SetDestinAddress(table.GetAt(i).cache_enetaddr.e_addr);
 						mp_UnderLayer->SetSourceAddress(m_sHeader.arp_src_macaddr.S_un.s_ether_addr);
 						mp_UnderLayer->setType(0x0008);
-						mp_UnderLayer->Send((unsigned char*)&pFrame, ARP_MAX_LENGTH);
+						//mp_UnderLayer->Send((unsigned char*)&pFrame, ARP_MAX_LENGTH);
+						//mp_aUpperLayer[0]->Receive(pFrame->arp_data);
 					}
 				}
 			}
@@ -100,13 +101,14 @@ BOOL CArpLayer::Receive(unsigned char* ppayload)
 	return bSuccess;
 }
 
-void CArpLayer::SendUnderLayerOp(PARP_HEADER pFrame, unsigned short op,int nlength)
+bool CArpLayer::SendUnderLayerOp(PARP_HEADER pFrame, unsigned short op,int nlength)
 {
-	
+	bool bSuccess = FALSE;
 	pFrame->op = op;//타입재설정
 	mp_UnderLayer->SetDestinAddress(pFrame->arp_dst_macaddr.e_addr);
 	mp_UnderLayer->setType(ENET_TYPE_ARP);//Ethernet계층 타입설정
-	mp_UnderLayer->Send((unsigned char*)pFrame, nlength);
+	bSuccess = mp_UnderLayer->Send((unsigned char*)pFrame, nlength);
+	return bSuccess;
 }
 
 bool CArpLayer::isPacketGARP(const PARP_HEADER  pFrame)
@@ -142,20 +144,24 @@ bool CArpLayer::isReceivePacketMine(const PARP_HEADER pFrame)
 //만약 캐시에 있어서 찾을경우 이더넷 설정해주고 true 반환
 BOOL CArpLayer::Send(unsigned char* ppayload, int nlength)
 {
+	bool bsucess = FALSE;
 	for (int i = 0; i<table.GetSize(); i++)
 	{
-		if (!memcmp(&table.GetAt(i).cache_ipaddr, ppayload, 4))//캐시테이블에서 검색후 존재한다면 그에 해당하는 맥주소 설정하여 전송
+		if (memcmp(&table.GetAt(i).cache_ipaddr, &m_sHeader.arp_dst_ipaddr, 4)==0)//캐시테이블에서 검색후 존재한다면 그에 해당하는 맥주소 설정하여 전송
 		{
 			memcpy(m_sHeader.arp_data, ppayload, nlength);
 			mp_UnderLayer->SetDestinAddress(table.GetAt(i).cache_enetaddr.e_addr);
-			mp_UnderLayer->Send((unsigned char*)&m_sHeader, nlength + ARP_MAX_LENGTH);
-			return true;
+			mp_UnderLayer->setType(0x0008);
+			bsucess = mp_UnderLayer->Send((unsigned char*)&ppayload, nlength);
+
+			return bsucess;
 		}
 	}
+	mp_UnderLayer->setType(0x0608);
 	memset(m_sHeader.arp_dst_macaddr.e_addr, 0xff, 6);		//목적지 Device Address를 Brodcast(0xff)로 설정함
-	SendUnderLayerOp(&m_sHeader, 0x0100, nlength + ARP_MAX_LENGTH);
+	bsucess = SendUnderLayerOp(&m_sHeader, 0x0100, nlength + ARP_MAX_LENGTH);
 
-	return false;
+	return bsucess;
 }
 
 unsigned char* CArpLayer::makeReplyPacket(unsigned char* ppayload /*prame*/, ETHERNET_ADDR* macAddr, IP_ADDR* ipAddr) {	

@@ -100,3 +100,7 @@ void CEthernetLayer::SetSourceAddress(unsigned char* pAddress)
 {
 	SetEnetSrcAddress(pAddress);
 }
+void	CEthernetLayer::setType(unsigned short type)
+{
+	m_sHeader.enet_type = type;
+}
