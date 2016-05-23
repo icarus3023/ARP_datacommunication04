@@ -35,7 +35,8 @@ public:
 	//{{AFX_DATA(CArpAppDlg)
 	enum { IDD = IDD_IPC_DIALOG };
 	CListBox		m_ListArpTable;		// Arp Table View
-	CIPAddressCtrl	m_unDstIPAddr;	// Destination IP Address
+//	CIPAddressCtrl	m_unDstIPAddr;
+// Destination IP Address
 	
 	int		interfaceNum;
 	void	setType(int interfaceNum);
@@ -150,7 +151,8 @@ private:
 	
 public:
 	CListBox proxyTableList;	
-	CComboBox m_ComboEnetName;	
+//	CComboBox m_ComboEnetName;
+
 	CListBox CProxyList;
 	CListCtrl srt_CList;
 
@@ -169,7 +171,7 @@ public:
 	void SetDstEthernetAddress();
 //	CEdit CGratitudeDeviceAddress;
 	CString CGratitousDevAddr;
-	CEdit CGratitousContol;
+//	CEdit CGratitousContol;
 
 	
 	afx_msg void OnBnClickedButton4();
