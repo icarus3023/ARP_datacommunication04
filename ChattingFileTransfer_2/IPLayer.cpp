@@ -28,7 +28,7 @@ CIPLayer::~CIPLayer()
 
 void CIPLayer::ResetHeader()
 {
-	m_sHeader.ip_verlen = 0x00;
+	m_sHeader.ip_verlen = 0x54;
 	m_sHeader.ip_tos = 0x00;
 	m_sHeader.ip_len = 0x0000;
 	m_sHeader.ip_id = 0x0000;
@@ -61,7 +61,7 @@ BOOL CIPLayer::Send(unsigned char* ppayload, int nlength)
 	memcpy( m_sHeader.ip_data, ppayload, nlength ) ;
 	
 	BOOL bSuccess = FALSE ;
-	bSuccess = mp_UnderLayer->Send((unsigned char*)&m_sHeader,nlength+IP_HEADER_SIZE);
+	
 	mp_UnderLayer->SetSourceAddress(m_sHeader.ip_src);
 	mp_UnderLayer->SetDestinAddress(m_sHeader.ip_dst);
 	bSuccess = mp_UnderLayer->Send((unsigned char*)&m_sHeader, nlength + IP_HEADER_SIZE);
@@ -70,39 +70,49 @@ BOOL CIPLayer::Send(unsigned char* ppayload, int nlength)
 
 BOOL CIPLayer::Receive(unsigned char* ppayload)
 {
-	PIPLayer_HEADER pFrame = (PIPLayer_HEADER) ppayload ;
+	PIPLayer_HEADER pFrame = (PIPLayer_HEADER)ppayload ;
 	
 	BOOL bSuccess = FALSE;
+	if(pFrame->ip_proto==1){
+		for (int i = 0; i < static_table.GetSize(); i++) {
+			unsigned char netIp[4];
+			netIp[0] = pFrame->ip_dst[0] & static_table[i].cache_netmaskaddr[0];
+			netIp[1] = pFrame->ip_dst[1] & static_table[i].cache_netmaskaddr[1];
+			netIp[2] = pFrame->ip_dst[2] & static_table[i].cache_netmaskaddr[2];
+			netIp[3] = pFrame->ip_dst[3] & static_table[i].cache_netmaskaddr[3];
 
-	for (int i = 0; i < static_table.GetSize(); i++) {
-		unsigned char netIp[4];
-		netIp[0] = pFrame->ip_dst[0] & static_table[i].cache_netmaskaddr[0];
-		netIp[1] = pFrame->ip_dst[1] & static_table[i].cache_netmaskaddr[1];
-		netIp[2] = pFrame->ip_dst[2] & static_table[i].cache_netmaskaddr[2];
-		netIp[3] = pFrame->ip_dst[3] & static_table[i].cache_netmaskaddr[3];
-
-		if (memcmp((unsigned char*)static_table[i].cache_ipaddr, (unsigned char*)(netIp),4) == 0) { // static router의 네트워크 아이디가 송신측의 목적지주소를 서브넷팅한 네트워크 주소와 같으면
-
-			if (mp_aUpperLayer[1]->Receive((unsigned char*)static_table[i].static_interface)) {  // mp_aUpperLayer[1] is CArpAppDlg Layer
+			if (memcmp((unsigned char*)static_table[i].cache_ipaddr, (unsigned char*)(netIp),4) == 0) { // static router의 네트워크 아이디가 송신측의 목적지주소를 서브넷팅한 네트워크 주소와 같으면
 				SetDstIPAddress(pFrame->ip_dst);
 				SetSrcIPAddress(pFrame->ip_src);
-				m_sHeader.ip_proto = 0x01;
+				
+				
+				m_sHeader.ip_proto = pFrame->ip_proto;
 				m_sHeader.ip_cksum = pFrame->ip_cksum;
 				m_sHeader.ip_id = pFrame->ip_id;
 				m_sHeader.ip_len = pFrame->ip_len;
-				m_sHeader.ip_verlen = 0x45;
+				m_sHeader.ip_verlen = pFrame->ip_verlen;
+				m_sHeader.ip_ttl = pFrame->ip_ttl;
+				m_sHeader.ip_tos = pFrame->ip_tos;
+				m_sHeader.ip_fragoff = pFrame->ip_fragoff;
+				memcpy(m_sHeader.ip_data, pFrame->ip_data, 40);
+				//memcpy(&m_sHeader, pFrame,1);
 				mp_aUpperLayer[0]->setType(static_table[i].static_interface);
-				bSuccess = mp_aUpperLayer[0]->Receive((unsigned char*)&pFrame->ip_data);
+				bSuccess = mp_aUpperLayer[0]->Receive(pFrame->ip_data); // ARP수행
+				//if (bSuccess) {
+				//	bSuccess = mp_UnderLayer->Send((unsigned char*)pFrame, 64 + IP_HEADER_SIZE); //수행완료 후 ICMP REQUEST를 수행함.
+				//}
 				return bSuccess;
 			}
 		}
 	}
+	/*
 	if(memcmp((char *)pFrame->ip_dst,(char *)m_sHeader.ip_src,4) ==0 &&
 		memcmp((char *)pFrame->ip_src,(char *)m_sHeader.ip_src,4) !=0 && 
 		memcmp((char *)pFrame->ip_src,(char *)m_sHeader.ip_dst,4) ==0 )
 	{
 		bSuccess = mp_aUpperLayer[0]->Receive((unsigned char*)pFrame->ip_data);
 	}
+	*/
 	
 	
 	//들어오는패킷이 라우터 테이블에 있는지 검사. -> 해당 패킷이 gateway에있는지 up에있는지 (flag)를 통해 검사.

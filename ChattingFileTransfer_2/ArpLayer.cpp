@@ -74,7 +74,8 @@ BOOL CArpLayer::Receive(unsigned char* ppayload)
 						table.GetAt(i).cache_ttl = 0;
 						mp_UnderLayer->SetDestinAddress(table.GetAt(i).cache_enetaddr.e_addr);
 						mp_UnderLayer->SetSourceAddress(m_sHeader.arp_src_macaddr.S_un.s_ether_addr);
-						mp_UnderLayer->setType(0x0008);
+						//if(pFrame->arp_data!=NULL) mp_aUpperLayer[0]->Receive(pFrame->arp_data);		// arp reply가
+						//mp_UnderLayer->setType(0x0008);
 					}
 				}
 			}
@@ -147,16 +148,21 @@ BOOL CArpLayer::Send(unsigned char* ppayload, int nlength)
 		if (memcmp(&table.GetAt(i).cache_ipaddr, &m_sHeader.arp_dst_ipaddr, 4) == 0)//캐시테이블에서 검색후 존재한다면 그에 해당하는 맥주소 설정하여 전송
 		{
 			memcpy(m_sHeader.arp_data, ppayload, nlength);
-			mp_UnderLayer->SetDestinAddress(table.GetAt(i).cache_enetaddr.e_addr);
+			// table에 존재하면 이더넷 타입을 0x0800으로 바꾸고 테이블의 이더넷주소를 목적지주소로 변경하여 이더넷 레이어에 ip header + ip data만 send한다. -> arp데이터 x
+			
+			mp_UnderLayer->SetDestinAddress(table.GetAt(i).cache_enetaddr.S_un.s_ether_addr);
+			mp_UnderLayer->SetSourceAddress(m_sHeader.arp_src_macaddr.S_un.s_ether_addr);
 			mp_UnderLayer->setType(0x0008);
-			bsucess = mp_UnderLayer->Send((unsigned char*)&ppayload, nlength);
+			bsucess = mp_UnderLayer->Send((unsigned char*)ppayload, nlength);
+			
 			return bsucess;
 		}
 	}
+	mp_UnderLayer->setType(0x0608);
 	memset(m_sHeader.arp_dst_macaddr.e_addr, 0xff, 6);		//목적지 Device Address를 Brodcast(0xff)로 설정함
-	bsucess = SendUnderLayerOp(&m_sHeader, 0x0100, nlength + ARP_MAX_LENGTH);
+	bsucess = SendUnderLayerOp(&m_sHeader, 0x0100, nlength ); // wireshark arp패킷에서는 arp+ethernet만 있던데...
 
-	return false;
+	return bsucess;
 }
 
 unsigned char* CArpLayer::makeReplyPacket(unsigned char* ppayload /*prame*/, ETHERNET_ADDR* macAddr, IP_ADDR* ipAddr) {	
