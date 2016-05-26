@@ -41,7 +41,7 @@ public:
 		unsigned char ip_data[IP_DATA_SIZE]; // variable length data
 		
 	} IPLayer_HEADER, *PIPLayer_HEADER ;
-
+	CArray<IPLayer_HEADER> buf;
 	typedef struct _CACHE_ENTRY {
 		unsigned char				cache_ipaddr[4];
 		unsigned char				cache_netmaskaddr[4];

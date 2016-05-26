@@ -60,6 +60,10 @@ BOOL CIPLayer::Send(unsigned char* ppayload, int nlength)
 {
 	memcpy( m_sHeader.ip_data, ppayload, nlength ) ;
 	
+	for (int i = 0; i < buf.GetSize(); i++) {
+		if(buf[i].ip_src==m_sHeader.ip_src && buf[i].ip_dst==m_sHeader.ip_dst) buf.Add(m_sHeader);
+	}
+	
 	BOOL bSuccess = FALSE ;
 	
 	mp_UnderLayer->SetSourceAddress(m_sHeader.ip_src);
@@ -73,14 +77,21 @@ BOOL CIPLayer::Receive(unsigned char* ppayload)
 	PIPLayer_HEADER pFrame = (PIPLayer_HEADER)ppayload ;
 	
 	BOOL bSuccess = FALSE;
+
 	if(pFrame->ip_proto==1){
 		for (int i = 0; i < static_table.GetSize(); i++) {
+			if (!pFrame){
+				for (int i = 0; i < buf.GetSize(); i++) {
+					if (buf[i].ip_src == m_sHeader.ip_src && buf[i].ip_dst == m_sHeader.ip_dst) {
+						pFrame = &buf[i];
+					}
+				}
+			}
 			unsigned char netIp[4];
 			netIp[0] = pFrame->ip_dst[0] & static_table[i].cache_netmaskaddr[0];
 			netIp[1] = pFrame->ip_dst[1] & static_table[i].cache_netmaskaddr[1];
 			netIp[2] = pFrame->ip_dst[2] & static_table[i].cache_netmaskaddr[2];
 			netIp[3] = pFrame->ip_dst[3] & static_table[i].cache_netmaskaddr[3];
-
 			if (memcmp((unsigned char*)static_table[i].cache_ipaddr, (unsigned char*)(netIp),4) == 0) { // static router의 네트워크 아이디가 송신측의 목적지주소를 서브넷팅한 네트워크 주소와 같으면
 				SetDstIPAddress(pFrame->ip_dst);
 				SetSrcIPAddress(pFrame->ip_src);

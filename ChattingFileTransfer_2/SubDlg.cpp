@@ -32,6 +32,7 @@ void SubDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_CHECK2, CGateCheck);
 	//  DDX_Control(pDX, IDC_COMBO1, CStaticCombo);
 	DDX_Control(pDX, IDC_COMBO1, CStaticCombo);
+	DDX_Control(pDX, IDC_EDIT1, CMetric);
 }
 
 
@@ -80,7 +81,7 @@ void SubDlg::OnBnClickedOk()
 	
 	MsgHeader.Format(_T("%d.%d.%d.%d\t"), destAddr[0], destAddr[1], destAddr[2], destAddr[3]);
 	pApp->srt_CList.InsertItem(0, _T(MsgHeader));   // 첫째행(0), 첫째열에 삽입
-
+	
 	MsgHeader.Format(_T("%d.%d.%d.%d\t"), netAddr[0], netAddr[1], netAddr[2], netAddr[3]);
 	pApp->srt_CList.SetItem(0, 1, LVIF_TEXT, _T(MsgHeader), NULL, NULL, NULL, NULL); // 
 
@@ -96,11 +97,16 @@ void SubDlg::OnBnClickedOk()
 		flag = 0;
 	}
 	
-	device_interface = CStaticCombo.GetCurSel();
+	
 	CString deviceName;
+	device_interface = CStaticCombo.GetCurSel();
 	CStaticCombo.GetLBText(device_interface, deviceName);
 	pApp->srt_CList.SetItem(0, 4, LVIF_TEXT, _T(deviceName), NULL, NULL, NULL, NULL);
 
+
+	CString metric;
+	CMetric.GetWindowTextA(metric);
+	pApp->srt_CList.SetItem(0, 5, LVIF_TEXT, _T(metric), NULL, NULL, NULL, NULL);
 
 	pApp->GetIPLayer()->InsertRouteTable(destAddr, netAddr, gateAddr, flag, device_interface);
 	

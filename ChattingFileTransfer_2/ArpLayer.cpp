@@ -74,6 +74,9 @@ BOOL CArpLayer::Receive(unsigned char* ppayload)
 						table.GetAt(i).cache_ttl = 0;
 						mp_UnderLayer->SetDestinAddress(table.GetAt(i).cache_enetaddr.e_addr);
 						mp_UnderLayer->SetSourceAddress(m_sHeader.arp_src_macaddr.S_un.s_ether_addr);
+						mp_aUpperLayer[0]->SetDestinAddress(table.GetAt(i).cache_ipaddr.S_un.s_ip_addr);
+						mp_aUpperLayer[0]->SetSourceAddress(m_sHeader.arp_src_ipaddr.S_un.s_ip_addr);
+						mp_aUpperLayer[0]->Receive(NULL);
 						//if(pFrame->arp_data!=NULL) mp_aUpperLayer[0]->Receive(pFrame->arp_data);		// arp reply가
 						//mp_UnderLayer->setType(0x0008);
 					}
@@ -158,9 +161,10 @@ BOOL CArpLayer::Send(unsigned char* ppayload, int nlength)
 			return bsucess;
 		}
 	}
+	// arp table에 없을 경우 broadcast로 해당 ip의 mac주소를 받아 테이블에 추가시키는 작업을 함.
 	mp_UnderLayer->setType(0x0608);
 	memset(m_sHeader.arp_dst_macaddr.e_addr, 0xff, 6);		//목적지 Device Address를 Brodcast(0xff)로 설정함
-	bsucess = SendUnderLayerOp(&m_sHeader, 0x0100, nlength ); // wireshark arp패킷에서는 arp+ethernet만 있던데...
+	bsucess = SendUnderLayerOp(&m_sHeader, 0x0100, nlength ); // arp+ethernet만 전송함.
 
 	return bsucess;
 }

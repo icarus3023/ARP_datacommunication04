@@ -51,4 +51,5 @@ public:
 	CButton CGateCheck;
 //	CComboBox CStaticCombo;
 	CComboBox CStaticCombo;
+	CEdit CMetric;
 };
